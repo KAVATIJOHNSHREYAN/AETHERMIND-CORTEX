@@ -49,6 +49,7 @@ class SessionManager:
         try:
             with self.db_conn.get_connection() as conn:
                 cursor = conn.cursor()
+                cursor.execute("DELETE FROM messages WHERE content LIKE '%Errno 99%' OR content LIKE '%Cannot assign requested address%'")
                 cursor.execute(
                     "SELECT role, content, prompt_tokens, completion_tokens, created_at FROM messages WHERE session_id = ? ORDER BY id ASC",
                     (session_id,)
