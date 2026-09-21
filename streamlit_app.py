@@ -249,6 +249,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 nav_options = ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"]
+
+if "pending_nav" in st.session_state:
+    st.session_state["nav_page"] = st.session_state.pop("pending_nav")
+
 if "nav_page" not in st.session_state or st.session_state["nav_page"] not in nav_options:
     st.session_state["nav_page"] = "💬 Reasoning Workspace"
 
@@ -276,17 +280,17 @@ with st.sidebar:
             st.rerun()
     with q2:
         if st.button("📂 Upload File", use_container_width=True):
-            st.session_state["nav_page"] = "📚 Knowledge Base"
+            st.session_state["pending_nav"] = "📚 Knowledge Base"
             st.rerun()
         
     q3, q4 = st.columns(2)
     with q3:
         if st.button("📁 Workspace", use_container_width=True):
-            st.session_state["nav_page"] = "🔌 Plugins & Workspaces"
+            st.session_state["pending_nav"] = "🔌 Plugins & Workspaces"
             st.rerun()
     with q4:
         if st.button("✨ Skills", use_container_width=True):
-            st.session_state["nav_page"] = "🛠️ Expert Skills"
+            st.session_state["pending_nav"] = "🛠️ Expert Skills"
             st.rerun()
 
     st.markdown("---")
@@ -334,7 +338,7 @@ if page_selection == "💬 Reasoning Workspace":
                 st.rerun()
         with p2:
             if st.button("📂 Upload / RAG", use_container_width=True):
-                st.session_state["nav_page"] = "📚 Knowledge Base"
+                st.session_state["pending_nav"] = "📚 Knowledge Base"
                 st.rerun()
         with p3:
             if st.button("⚙️ Architecture", use_container_width=True):
