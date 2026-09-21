@@ -1,22 +1,20 @@
 """
-AetherMind Cortex Version Manager
-Provides version information and project metadata.
+AetherMind Cortex Version Manager (v1.0 Production Stable Release)
 """
 
 from typing import Dict, Any
 
-VERSION_MAJOR = 0
-VERSION_MINOR = 1
+VERSION_MAJOR = 1
+VERSION_MINOR = 0
 VERSION_PATCH = 0
-VERSION_STAGE = "alpha"
+VERSION_STAGE = "stable"
 
 APP_NAME = "AetherMind Cortex"
-APP_DESCRIPTION = "Human-Centered AI Reasoning Engine"
+APP_DESCRIPTION = "Human-Centered AI Reasoning Engine Platform"
 AUTHOR = "AetherMind Team"
-AUTHOR = "KAVATI JOHN SHREYAN"
 
 def get_version_string() -> str:
-    """Returns the formatted semantic version string."""
+    """Returns formatted semantic version string."""
     return f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}-{VERSION_STAGE}"
 
 def get_app_metadata() -> Dict[str, Any]:

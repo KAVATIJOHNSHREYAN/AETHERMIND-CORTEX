@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Central Application Controller (Phase 11 Expanded)
-Orchestrates Config, DB, Ollama Engine, Sessions, Memory, RAG, Profile, Reasoning, Workflow, Decision, Skill Manager, Automation, Plugins, Workspaces, and Backup.
+AetherMind Cortex Central Application Controller (v1.0 Release Complete)
+Orchestrates Config, DB, Ollama Engine, Sessions, Memory, RAG, Profile, Reasoning Engine, Workflow Engine, Decision Engine, Skill Manager, Automation, Plugins, Workspaces, Backup, and Diagnostics.
 """
 
 from typing import Dict, Any, Optional, List
@@ -23,11 +23,12 @@ from core.automation_engine import AutomationEngine
 from core.plugin_manager import PluginManager
 from core.workspace_manager import WorkspaceManager
 from core.backup_manager import BackupManager
+from core.diagnostics import DiagnosticsEngine
 
 logger = get_logger("AppController")
 
 class AppController:
-    """Central Application Controller managing all sub-systems."""
+    """Central Application Controller managing all 12 platform subsystems."""
     _instance: Optional["AppController"] = None
 
     def __new__(cls):
@@ -40,7 +41,7 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller (Phase 11)...")
+        logger.info("Initializing AetherMind Cortex Central Controller (v1.0 Release)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
@@ -62,13 +63,14 @@ class AppController:
         self.plugin_manager = PluginManager(self.db_conn)
         self.workspace_manager = WorkspaceManager(self.db_conn)
         self.backup_manager = BackupManager()
+        self.diagnostics_engine = DiagnosticsEngine(self.db_conn)
         
         # Active session state
         self.current_session_id: Optional[str] = None
         self.ensure_active_session()
 
         self._initialized = True
-        logger.info("AetherMind Cortex Controller Phase 11 initialized successfully.")
+        logger.info("AetherMind Cortex Controller v1.0 Release initialized successfully.")
 
     def ensure_active_session(self) -> str:
         """Ensures there is an active session loaded."""

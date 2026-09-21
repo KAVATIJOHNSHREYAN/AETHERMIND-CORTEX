@@ -17,21 +17,22 @@ from ui.components.profile_tab import render_profile_tab
 from ui.components.memory_tab import render_memory_tab
 from ui.components.knowledge_tab import render_knowledge_tab
 from ui.components.settings_tab import render_settings_tab
+from ui.components.diagnostics_tab import render_diagnostics_tab
 from ui.components.about_tab import render_about_tab
 from ui.components.status_bar import render_status_bar
 
 def build_ui(controller: AppController) -> gr.Blocks:
-    """Assembles and returns the Gradio UI Blocks interface for Phase 11."""
+    """Assembles and returns the Gradio UI Blocks interface for Phase 12 Flagship Release."""
     current_theme_name = controller.settings_manager.get_setting("app.theme", "dark")
     theme = get_theme(current_theme_name)
     
     with gr.Blocks(
         theme=theme,
         css=CUSTOM_CSS,
-        title="AetherMind Cortex - Desktop AI Platform"
+        title="AetherMind Cortex - Flagship AI Platform"
     ) as demo:
         with gr.Row(elem_classes=["aether-header"]):
-            gr.Markdown("# 🧠 AetherMind Cortex (Desktop AI Platform)")
+            gr.Markdown("# 🧠 AetherMind Cortex (v1.0 Flagship AI Platform)")
             
         with gr.Row():
             # Left Sidebar Navigation & Controls
@@ -50,6 +51,7 @@ def build_ui(controller: AppController) -> gr.Blocks:
                     render_memory_tab(controller)
                     render_knowledge_tab(controller)
                     render_settings_tab(controller)
+                    render_diagnostics_tab(controller)
                     render_about_tab(controller)
                     
         # Bottom Persistent Status Bar
