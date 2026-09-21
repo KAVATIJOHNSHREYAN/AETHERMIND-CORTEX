@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Central Application Controller (Phase 10 Expanded)
-Orchestrates Config, DB, Ollama Engine, Sessions, Memory, RAG, Profile, Reasoning Engine, Workflow Engine, Decision Engine, Skill Manager, and Automation Engine.
+AetherMind Cortex Central Application Controller (Phase 11 Expanded)
+Orchestrates Config, DB, Ollama Engine, Sessions, Memory, RAG, Profile, Reasoning, Workflow, Decision, Skill Manager, Automation, Plugins, Workspaces, and Backup.
 """
 
 from typing import Dict, Any, Optional, List
@@ -20,6 +20,9 @@ from core.workflow_engine import WorkflowEngine
 from core.decision_engine import DecisionEngine
 from core.skill_manager import SkillManager
 from core.automation_engine import AutomationEngine
+from core.plugin_manager import PluginManager
+from core.workspace_manager import WorkspaceManager
+from core.backup_manager import BackupManager
 
 logger = get_logger("AppController")
 
@@ -37,7 +40,7 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller (Phase 10)...")
+        logger.info("Initializing AetherMind Cortex Central Controller (Phase 11)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
@@ -45,7 +48,7 @@ class AppController:
         # Initialize SQLite DB
         self.db_initialized = initialize_database(self.db_conn)
         
-        # Initialize Engines
+        # Initialize All Subsystem Engines
         self.llm_engine = OllamaEngine()
         self.session_manager = SessionManager(self.db_conn)
         self.memory_manager = MemoryManager(self.db_conn)
@@ -56,13 +59,16 @@ class AppController:
         self.decision_engine = DecisionEngine(self.db_conn)
         self.skill_manager = SkillManager(self.db_conn)
         self.automation_engine = AutomationEngine(self.db_conn)
+        self.plugin_manager = PluginManager(self.db_conn)
+        self.workspace_manager = WorkspaceManager(self.db_conn)
+        self.backup_manager = BackupManager()
         
         # Active session state
         self.current_session_id: Optional[str] = None
         self.ensure_active_session()
 
         self._initialized = True
-        logger.info("AetherMind Cortex Controller Phase 10 initialized successfully.")
+        logger.info("AetherMind Cortex Controller Phase 11 initialized successfully.")
 
     def ensure_active_session(self) -> str:
         """Ensures there is an active session loaded."""
@@ -93,7 +99,8 @@ class AppController:
         task_count = len(self.workflow_engine.list_tasks(status="all"))
         decision_count = len(self.decision_engine.list_saved_decisions())
         active_skills_count = len([s for s in self.skill_manager.list_skills() if s["enabled"] == 1])
-        automation_jobs_count = len(self.automation_engine.list_automation_jobs())
+        plugin_count = len(self.plugin_manager.list_plugins())
+        workspace_count = len(self.workspace_manager.list_workspaces())
         user_name = self.profile_manager.get_profile_attribute("user_name", "User")
         
         return {
@@ -106,7 +113,8 @@ class AppController:
             "task_count": task_count,
             "decision_count": decision_count,
             "active_skills": active_skills_count,
-            "automation_jobs": automation_jobs_count,
+            "plugin_count": plugin_count,
+            "workspace_count": workspace_count,
             "user_name": user_name,
             "version": get_version_string(),
             "theme": current_theme,

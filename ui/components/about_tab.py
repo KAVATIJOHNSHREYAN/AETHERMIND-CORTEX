@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI (Phase 10 Expanded)
+About Page Component for AetherMind Cortex UI (Phase 11 Expanded)
 """
 
 import gradio as gr
@@ -16,17 +16,17 @@ def render_about_tab(controller: AppController):
             gr.Markdown(f"""
             - **Version:** `{meta['version']}` ({meta['stage']})
             - **Python Target:** `{meta['python_target']}`
-            - **Architecture:** Clean Modular Python Architecture (No JS Frameworks)
-            - **UI Framework:** Gradio
+            - **Architecture:** Clean Modular Python Architecture & PySide6 Desktop Container
+            - **UI Framework:** Gradio & PySide6 (Qt)
             - **Storage Engine:** SQLite 3 & ChromaDB Local Vector Store
             - **Repository:** `https://github.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX`
             """)
             
         gr.Markdown("""
-        ### Phase 10 Safe Local Automation Milestones
-        - ✅ Safe Local Python Automation Script Executor & Runner
-        - ✅ Clean Architecture Project Template & Directory Structure Generator
-        - ✅ Local Reminders & Task Scheduling Engine
-        - ✅ Automation Dashboard UI with Real-Time Subprocess Log Capturing
-        - ✅ 100% Offline Architecture - Zero cloud dependency & privacy-first design
+        ### Phase 11 Desktop Experience & Ecosystem Milestones
+        - ✅ Native PySide6 Desktop GUI Window Container (`pyside_app.py`)
+        - ✅ Ecosystem Plugin Manager & Permissions Control (`installed_plugins` table)
+        - ✅ Multi-Workspace Switcher & Session State Restoration (`workspaces` table)
+        - ✅ Full System Backup Zip Archive Generator & Restore Manager
+        - ✅ 100% Offline Architecture - Zero cloud telemetry & privacy-first design
         """)

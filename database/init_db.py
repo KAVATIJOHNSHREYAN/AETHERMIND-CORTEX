@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Database Schema (Phase 10 Expanded)
-Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, decisions, decision_options, registered_skills, automation_jobs, reminders, and logs_audit.
+AetherMind Cortex Database Schema (Phase 11 Expanded)
+Includes all engine master tables: app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, decisions, decision_options, registered_skills, automation_jobs, reminders, workspaces, installed_plugins, and logs_audit.
 """
 
 from database.connection import DBConnection
@@ -136,8 +136,8 @@ CREATE TABLE IF NOT EXISTS registered_skills (
 CREATE TABLE IF NOT EXISTS automation_jobs (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    type TEXT NOT NULL, -- 'file', 'script', 'reminder', 'template'
-    status TEXT DEFAULT 'completed', -- 'pending', 'running', 'completed', 'failed'
+    type TEXT NOT NULL,
+    status TEXT DEFAULT 'completed',
     logs TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -147,7 +147,26 @@ CREATE TABLE IF NOT EXISTS reminders (
     id TEXT PRIMARY KEY,
     message TEXT NOT NULL,
     scheduled_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status TEXT DEFAULT 'pending', -- 'pending', 'triggered', 'completed'
+    status TEXT DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Workspaces Management Table
+CREATE TABLE IF NOT EXISTS workspaces (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    is_active INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Installed Plugins Ecosystem Table
+CREATE TABLE IF NOT EXISTS installed_plugins (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    version TEXT DEFAULT '1.0.0',
+    enabled INTEGER DEFAULT 1,
+    permissions TEXT DEFAULT 'local_read',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -170,7 +189,7 @@ def initialize_database(db_connection: DBConnection = None) -> bool:
         with connection.get_connection() as conn:
             cursor = conn.cursor()
             cursor.executescript(SCHEMA_SQL)
-            logger.info("Database schema initialized successfully (Phase 10 schema active).")
+            logger.info("Database schema initialized successfully (Phase 11 schema active).")
             return True
     except Exception as e:
         logger.error(f"Failed to initialize database schema: {e}")
