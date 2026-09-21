@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Database Schema (Phase 9 Expanded)
-Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, decisions, decision_options, registered_skills, and logs_audit.
+AetherMind Cortex Database Schema (Phase 10 Expanded)
+Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, decisions, decision_options, registered_skills, automation_jobs, reminders, and logs_audit.
 """
 
 from database.connection import DBConnection
@@ -132,6 +132,25 @@ CREATE TABLE IF NOT EXISTS registered_skills (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Automation Pipeline Jobs Table
+CREATE TABLE IF NOT EXISTS automation_jobs (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL, -- 'file', 'script', 'reminder', 'template'
+    status TEXT DEFAULT 'completed', -- 'pending', 'running', 'completed', 'failed'
+    logs TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Local Reminders & Tasks Table
+CREATE TABLE IF NOT EXISTS reminders (
+    id TEXT PRIMARY KEY,
+    message TEXT NOT NULL,
+    scheduled_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'pending', -- 'pending', 'triggered', 'completed'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Audit Log Table
 CREATE TABLE IF NOT EXISTS logs_audit (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -151,7 +170,7 @@ def initialize_database(db_connection: DBConnection = None) -> bool:
         with connection.get_connection() as conn:
             cursor = conn.cursor()
             cursor.executescript(SCHEMA_SQL)
-            logger.info("Database schema initialized successfully (Phase 9 schema active).")
+            logger.info("Database schema initialized successfully (Phase 10 schema active).")
             return True
     except Exception as e:
         logger.error(f"Failed to initialize database schema: {e}")

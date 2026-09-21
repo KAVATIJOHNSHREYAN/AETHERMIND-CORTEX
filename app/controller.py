@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Central Application Controller (Phase 9 Expanded)
-Orchestrates Config, DB, Ollama Engine, Sessions, Memory, RAG, Profile, Reasoning Engine, Workflow Engine, Decision Engine, and Skill Manager.
+AetherMind Cortex Central Application Controller (Phase 10 Expanded)
+Orchestrates Config, DB, Ollama Engine, Sessions, Memory, RAG, Profile, Reasoning Engine, Workflow Engine, Decision Engine, Skill Manager, and Automation Engine.
 """
 
 from typing import Dict, Any, Optional, List
@@ -19,6 +19,7 @@ from core.reasoning_engine import ReasoningEngine
 from core.workflow_engine import WorkflowEngine
 from core.decision_engine import DecisionEngine
 from core.skill_manager import SkillManager
+from core.automation_engine import AutomationEngine
 
 logger = get_logger("AppController")
 
@@ -36,7 +37,7 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller (Phase 9)...")
+        logger.info("Initializing AetherMind Cortex Central Controller (Phase 10)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
@@ -54,13 +55,14 @@ class AppController:
         self.workflow_engine = WorkflowEngine(self.db_conn)
         self.decision_engine = DecisionEngine(self.db_conn)
         self.skill_manager = SkillManager(self.db_conn)
+        self.automation_engine = AutomationEngine(self.db_conn)
         
         # Active session state
         self.current_session_id: Optional[str] = None
         self.ensure_active_session()
 
         self._initialized = True
-        logger.info("AetherMind Cortex Controller Phase 9 initialized successfully.")
+        logger.info("AetherMind Cortex Controller Phase 10 initialized successfully.")
 
     def ensure_active_session(self) -> str:
         """Ensures there is an active session loaded."""
@@ -91,6 +93,7 @@ class AppController:
         task_count = len(self.workflow_engine.list_tasks(status="all"))
         decision_count = len(self.decision_engine.list_saved_decisions())
         active_skills_count = len([s for s in self.skill_manager.list_skills() if s["enabled"] == 1])
+        automation_jobs_count = len(self.automation_engine.list_automation_jobs())
         user_name = self.profile_manager.get_profile_attribute("user_name", "User")
         
         return {
@@ -103,6 +106,7 @@ class AppController:
             "task_count": task_count,
             "decision_count": decision_count,
             "active_skills": active_skills_count,
+            "automation_jobs": automation_jobs_count,
             "user_name": user_name,
             "version": get_version_string(),
             "theme": current_theme,
