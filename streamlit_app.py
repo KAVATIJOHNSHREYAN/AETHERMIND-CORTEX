@@ -90,7 +90,7 @@ with st.sidebar:
     st.divider()
     st.subheader("🤖 Active Model")
     models = controller.get_available_models()
-    selected_model = st.selectbox("Ollama Model", choices=models if models else ["No models found"])
+    selected_model = st.selectbox("Ollama Model", options=models if models else ["No models found"])
     
     st.divider()
     st.subheader("💬 Sessions")
@@ -100,7 +100,7 @@ with st.sidebar:
         
     sessions = controller.session_manager.list_sessions()
     session_titles = [s["title"] for s in sessions] if sessions else ["Default Chat"]
-    selected_session = st.selectbox("Select Session", session_titles)
+    selected_session = st.selectbox("Select Session", options=session_titles)
 
     st.divider()
     st.markdown(f"**Version:** `{meta['version']}`")
