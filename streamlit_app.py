@@ -237,7 +237,31 @@ st.markdown("""
         background-color: #0b1120 !important;
         border: 1px solid rgba(56, 189, 248, 0.25) !important;
         border-radius: 10px !important;
-        color: #f8fafc !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    /* Selectbox Dropdown Menu Popover (Remove White Box & Force Dark Background with Bold White Letters) */
+    div[data-baseweb="popover"], ul[role="listbox"], div[data-baseweb="menu"], [data-baseweb="popover"] > div {
+        background-color: #080d1a !important;
+        background: #080d1a !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 12px !important;
+        color: #ffffff !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    li[role="option"], div[role="option"], ul[role="listbox"] li {
+        background-color: #080d1a !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+        padding: 10px 14px !important;
+    }
+
+    li[role="option"]:hover, div[role="option"]:hover, ul[role="listbox"] li[aria-selected="true"] {
+        background-color: rgba(56, 189, 248, 0.25) !important;
+        color: #ffffff !important;
     }
 </style>
 """, unsafe_allow_html=True)
