@@ -360,7 +360,6 @@ if page_selection == "💬 Reasoning Workspace":
             
             message_placeholder.markdown(response_accumulated)
             controller.add_assistant_message(response_accumulated)
-            st.rerun()
 
     # Developer Inspection Pipeline Card
     with st.expander("⚙️ Developer Mode: Cognitive Reasoning Inspection Pipeline", expanded=True):
