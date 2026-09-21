@@ -1,0 +1,4 @@
+gradio>=4.0.0
+pyyaml>=6.0.1
+pydantic>=2.5.0
+pytest>=8.0.0

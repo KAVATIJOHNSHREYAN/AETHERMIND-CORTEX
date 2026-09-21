@@ -1,0 +1,19 @@
+app:
+  name: "AetherMind Cortex"
+  theme: "dark"
+  language: "en"
+  debug: false
+
+database:
+  db_name: "aethermind.db"
+  path: "database/aethermind.db"
+
+logging:
+  level: "INFO"
+  file_name: "aethermind.log"
+
+ui:
+  title: "AetherMind Cortex | Human-Centered AI Reasoning Engine"
+  server_name: "127.0.0.1"
+  server_port: 7860
+  show_api: false
