@@ -32,17 +32,78 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    /* Global Dark Theme */
-    html, body, [data-testid="stAppViewContainer"], .main {
+    /* Global Dark Theme Force */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stBottom"], .main, div[data-testid="stToolbar"] {
         background-color: #030611 !important;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
         color: #f1f5f9 !important;
     }
 
     /* Sidebar Background & Borders */
-    [data-testid="stSidebar"] {
+    [data-testid="stSidebar"], [data-testid="stSidebarNav"] {
         background-color: #060a17 !important;
         border-right: 1px solid rgba(56, 189, 248, 0.2) !important;
+    }
+
+    /* Override Native Streamlit Expanders (Remove White Background) */
+    [data-testid="stExpander"], details {
+        background-color: rgba(13, 20, 36, 0.85) !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
+        border-radius: 14px !important;
+        color: #f8fafc !important;
+    }
+    summary, [data-testid="stExpanderSummary"] {
+        background-color: rgba(18, 26, 46, 0.9) !important;
+        color: #f8fafc !important;
+        border-radius: 12px !important;
+    }
+    details[open] summary {
+        border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+    }
+
+    /* Override Native Streamlit Chat Messages (Remove White/Grey Bubble Fill) */
+    [data-testid="stChatMessage"] {
+        background-color: rgba(13, 20, 36, 0.85) !important;
+        border: 1px solid rgba(56, 189, 248, 0.2) !important;
+        border-radius: 14px !important;
+        color: #f8fafc !important;
+        margin-bottom: 12px !important;
+    }
+    [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] span, [data-testid="stChatMessage"] div {
+        color: #f1f5f9 !important;
+    }
+
+    /* Override Chat Input Bar at Bottom (Remove White Wrapper & Red Border) */
+    [data-testid="stChatInput"], [data-testid="stChatInput"] > div, div[data-baseweb="input"] {
+        background-color: #090e1a !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 14px !important;
+        color: #f8fafc !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    }
+    [data-testid="stChatInput"] textarea {
+        background-color: transparent !important;
+        color: #f8fafc !important;
+    }
+
+    /* Override Native Streamlit Buttons (Sidebar & Main Area) */
+    button, div[data-testid="stButton"] > button {
+        background: rgba(18, 26, 46, 0.9) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 10px !important;
+        transition: all 0.2s ease !important;
+    }
+    button:hover, div[data-testid="stButton"] > button:hover {
+        background: rgba(56, 189, 248, 0.25) !important;
+        border-color: #38bdf8 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 15px rgba(56, 189, 248, 0.4) !important;
+    }
+
+    /* Override Radio & Checkbox Indicators */
+    div[role="radiogroup"] label, div[data-testid="stCheckbox"] label {
+        color: #cbd5e1 !important;
     }
 
     /* Typography Sizes & Colors */
@@ -54,7 +115,6 @@ st.markdown("""
 
     p, span, label, div {
         color: #cbd5e1 !important;
-        font-size: 0.92rem !important;
     }
 
     .stCaption {
