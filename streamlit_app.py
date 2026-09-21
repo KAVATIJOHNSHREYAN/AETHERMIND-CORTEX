@@ -122,7 +122,20 @@ tab_chat, tab_knowledge, tab_memory, tab_decision, tab_diagnostics, tab_about = 
 ])
 
 with tab_chat:
-    st.subheader("Interactive Cognitive Chat Workspace")
+    # Hero Welcome Banner Card matching Mockup UI
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 24px; margin-bottom: 20px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);">
+        <h2 style="margin: 0 0 8px 0; color: #f8fafc; font-size: 1.5rem; font-weight: 700;">👋 Welcome to AetherMind Cortex</h2>
+        <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 0.95rem;">Your personal AI reasoning partner. Choose a prompt, upload a file, or start a new conversation.</p>
+        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; font-size: 0.85rem; color: #f8fafc;">💡 Explain a concept</span>
+            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; font-size: 0.85rem; color: #f8fafc;">📂 Analyze a file</span>
+            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; font-size: 0.85rem; color: #f8fafc;">⚙️ Solve a problem</span>
+            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; font-size: 0.85rem; color: #f8fafc;">📊 Create a plan</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     messages = controller.get_active_messages()
     for msg in messages:
         with st.chat_message(msg["role"]):
