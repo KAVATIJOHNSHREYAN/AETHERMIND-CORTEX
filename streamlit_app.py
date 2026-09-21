@@ -135,10 +135,37 @@ with tab_chat:
         controller.add_user_message(prompt)
         
         with st.chat_message("assistant"):
-            with st.spinner("Reasoning..."):
-                response = f"**AetherMind Cortex Response:**\nI have received your request: '{prompt}'. Cognitive pipeline initialized."
-                st.write(response)
-                controller.add_assistant_message(response)
+            message_placeholder = st.empty()
+            
+            # Setup Cognitive Reasoning & Expert Skills System Prompt
+            skills_context = controller.skill_manager.get_active_skills_prompt_injection()
+            reasoning_prompt = controller.reasoning_engine.generate_reasoning_pipeline_prompt(
+                prompt=prompt,
+                user_context=controller.profile_manager.get_personalized_prompt_context(),
+                memory_context=controller.memory_manager.get_context_prompt_injection(prompt),
+                rag_context=controller.knowledge_engine.get_rag_context_injection(prompt)[0]
+            )
+            if skills_context:
+                reasoning_prompt += "\n" + skills_context
+
+            # Construct message history format
+            history_msgs = []
+            for m in messages:
+                history_msgs.append({"role": m["role"], "content": m["content"]})
+            history_msgs.append({"role": "user", "content": prompt})
+
+            response_accumulated = ""
+            for chunk in controller.llm_engine.stream_chat(
+                model=selected_model,
+                messages=history_msgs,
+                system_prompt=reasoning_prompt
+            ):
+                response_accumulated = chunk["accumulated"]
+                message_placeholder.markdown(response_accumulated + "▌")
+            
+            message_placeholder.markdown(response_accumulated)
+            controller.add_assistant_message(response_accumulated)
+            st.rerun()
 
 with tab_knowledge:
     st.subheader("📚 Offline RAG Knowledge Engine")
