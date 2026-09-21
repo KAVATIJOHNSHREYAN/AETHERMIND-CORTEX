@@ -74,6 +74,11 @@ st.markdown("""
     }
 
     /* Override Chat Input Bar at Bottom (Remove White Wrapper & Red Border) */
+    [data-testid="stBottom"], [data-testid="stBottom"] > div {
+        background-color: #030611 !important;
+        background: #030611 !important;
+        box-shadow: none !important;
+    }
     [data-testid="stChatInput"], [data-testid="stChatInput"] > div, div[data-baseweb="input"] {
         background-color: #090e1a !important;
         border: 1px solid rgba(56, 189, 248, 0.3) !important;
