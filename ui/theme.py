@@ -3,6 +3,8 @@ AetherMind Cortex UI Theme & Custom CSS Definitions
 Applies modern glassmorphism styling and dark/light mode themes for Gradio.
 """
 
+import gradio as gr
+
 CUSTOM_CSS = """
 /* AetherMind Cortex Glassmorphism Theme CSS */
 body {
