@@ -10,11 +10,23 @@ from app.controller import AppController
 def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
     """Renders the real-time cognitive reasoning chat workspace with active Expert Skills integration."""
     with gr.Tab("💬 Reasoning Workspace"):
-        gr.Markdown("### 🤖 Cognitive AI Reasoning Workspace & Modular Expert Platform")
+        # Hero Welcome Banner Card matching Mockup UI
+        gr.HTML('''
+        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 15px; text-align: center;">
+            <h2 style="margin: 0 0 8px 0; color: #f8fafc; font-size: 1.4rem; font-weight: 700;">👋 Welcome to AetherMind Cortex</h2>
+            <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 0.95rem;">Your personal AI reasoning partner. Choose a prompt, upload a file, or start a new conversation.</p>
+            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                <span class="quick-action-pill">💡 Explain a concept</span>
+                <span class="quick-action-pill">📂 Analyze a file</span>
+                <span class="quick-action-pill">⚙️ Solve a problem</span>
+                <span class="quick-action-pill">📊 Create a plan</span>
+            </div>
+        </div>
+        ''')
         
         chatbot = gr.Chatbot(
             value=[],
-            height=460,
+            height=400,
             render_markdown=True,
             avatar_images=None
         )
