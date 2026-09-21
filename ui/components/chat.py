@@ -15,7 +15,6 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
         chatbot = gr.Chatbot(
             value=[],
             height=460,
-            show_copy_button=True,
             render_markdown=True,
             avatar_images=None
         )
