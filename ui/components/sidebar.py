@@ -13,8 +13,15 @@ def render_sidebar(controller: AppController):
     default_model = available_models[0] if available_models else "None Found"
     
     with gr.Column(scale=1, elem_classes=["sidebar-panel"]):
-        gr.Markdown(f"## 🧠 {meta['app_name']}")
-        gr.Markdown(f"*{meta['description']}*")
+        gr.HTML('''
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+            <img src="/file=assets/logo.png" style="width: 42px; height: 42px; border-radius: 8px; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);" />
+            <div>
+                <h3 style="margin: 0; color: #f8fafc; font-size: 1.1rem; font-weight: 700;">AetherMind Cortex</h3>
+                <span style="font-size: 0.75rem; color: #94a3b8;">Human-Centered AI</span>
+            </div>
+        </div>
+        ''')
         gr.Markdown(f"**Version:** `{meta['version']}`")
         gr.Markdown("---")
         

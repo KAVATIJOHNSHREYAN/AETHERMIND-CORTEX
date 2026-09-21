@@ -31,7 +31,11 @@ def build_ui(controller: AppController) -> gr.Blocks:
         css=CUSTOM_CSS,
         title="AetherMind Cortex - Flagship AI Platform"
     ) as demo:
+        # Background Heartbeat Pulsing Watermark
+        gr.HTML('<div class="aether-watermark"></div>')
+
         with gr.Row(elem_classes=["aether-header"]):
+            gr.HTML('<img src="/file=assets/logo.png" class="aether-header-logo" alt="AetherMind Cortex Logo" />')
             gr.Markdown("# 🧠 AetherMind Cortex (v1.0 Flagship AI Platform)")
             
         with gr.Row():

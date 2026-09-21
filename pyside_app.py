@@ -3,6 +3,7 @@ Native PySide6 Desktop GUI Window Launcher for AetherMind Cortex
 Embeds Gradio Web UI inside a native desktop window container with system tray support.
 """
 
+import os
 import sys
 import threading
 import time
@@ -22,7 +23,16 @@ def main_desktop():
     time.sleep(3)  # Wait for server startup
 
     app = QApplication(sys.argv)
+    
+    # Set Official AetherMind Cortex Brand Icon
+    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "logo.png")
+    if os.path.exists(icon_path):
+        app_icon = QIcon(icon_path)
+        app.setWindowIcon(app_icon)
+
     window = QMainWindow()
+    if os.path.exists(icon_path):
+        window.setWindowIcon(QIcon(icon_path))
     window.setWindowTitle("AetherMind Cortex - Native Desktop Experience")
     window.resize(1400, 900)
 
