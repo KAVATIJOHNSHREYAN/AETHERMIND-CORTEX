@@ -1,20 +1,22 @@
 """
-AetherMind Cortex Central Application Controller
-Serves as the main orchestrator binding Core business logic, Database operations, and UI state.
+AetherMind Cortex Central Application Controller (Phase 2 Expanded)
+Orchestrates Config, DB, Ollama Engine, and Session History.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Generator
 from core.config_manager import ConfigManager
 from core.logger import get_logger
 from core.settings import SettingsManager
 from core.version import get_app_metadata, get_version_string
 from database.connection import DBConnection
 from database.init_db import initialize_database
+from core.llm_engine import OllamaEngine
+from core.session_manager import SessionManager
 
 logger = get_logger("AppController")
 
 class AppController:
-    """Central Application Controller managing application lifecycle and state."""
+    """Central Application Controller managing application lifecycle, LLM engine, and session state."""
     _instance: Optional["AppController"] = None
 
     def __new__(cls):
@@ -27,23 +29,54 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller...")
+        logger.info("Initializing AetherMind Cortex Central Controller (Phase 2)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
         
         # Initialize SQLite DB
         self.db_initialized = initialize_database(self.db_conn)
+        
+        # Initialize LLM Engine & Session Manager
+        self.llm_engine = OllamaEngine()
+        self.session_manager = SessionManager(self.db_conn)
+        
+        # Active session state
+        self.current_session_id: Optional[str] = None
+        self.ensure_active_session()
+
         self._initialized = True
-        logger.info("AetherMind Cortex Controller successfully initialized.")
+        logger.info("AetherMind Cortex Controller Phase 2 initialized successfully.")
+
+    def ensure_active_session(self) -> str:
+        """Ensures there is an active session loaded."""
+        sessions = self.session_manager.list_sessions()
+        if sessions:
+            self.current_session_id = sessions[0]["id"]
+        else:
+            models = self.get_available_models()
+            default_model = models[0] if models else "default"
+            self.current_session_id = self.session_manager.create_session("New Session", default_model)
+        return self.current_session_id
+
+    def get_available_models(self) -> List[str]:
+        """Retrieves installed Ollama models."""
+        return self.llm_engine.list_available_models()
+
+    def get_ollama_status(self) -> Dict[str, Any]:
+        """Checks Ollama connection health."""
+        return self.llm_engine.check_service_status()
 
     def get_system_status(self) -> Dict[str, Any]:
         """Gathers system status indicators for UI display."""
         db_healthy = self.db_conn.check_health()
+        ollama_status = self.get_ollama_status()
         current_theme = self.settings_manager.get_setting("app.theme", "dark")
         return {
-            "status": "Online" if db_healthy else "Degraded",
+            "status": "Online" if (db_healthy and ollama_status["online"]) else "Degraded",
             "db_healthy": db_healthy,
+            "ollama_online": ollama_status["online"],
+            "ollama_models": ollama_status["model_count"],
             "version": get_version_string(),
             "theme": current_theme,
             "app_name": self.config_manager.config.app.name,
@@ -60,3 +93,37 @@ class AppController:
     def get_metadata(self) -> Dict[str, Any]:
         """Returns metadata detailing application configuration and versioning."""
         return get_app_metadata()
+
+    # Session CRUD Delegates
+    def create_new_session(self, model_name: Optional[str] = None) -> str:
+        self.current_session_id = self.session_manager.create_session("New Chat", model_name)
+        return self.current_session_id
+
+    def switch_session(self, session_id: str) -> List[Dict[str, Any]]:
+        self.current_session_id = session_id
+        return self.session_manager.get_session_messages(session_id)
+
+    def get_active_messages(self) -> List[Dict[str, Any]]:
+        if not self.current_session_id:
+            self.ensure_active_session()
+        return self.session_manager.get_session_messages(self.current_session_id)
+
+    def add_user_message(self, content: str) -> bool:
+        if not self.current_session_id:
+            self.ensure_active_session()
+        return self.session_manager.add_message(self.current_session_id, "user", content)
+
+    def add_assistant_message(self, content: str, tokens: int = 0) -> bool:
+        if not self.current_session_id:
+            self.ensure_active_session()
+        return self.session_manager.add_message(self.current_session_id, "assistant", content, tokens)
+
+    def clear_active_session(self) -> bool:
+        if self.current_session_id:
+            return self.session_manager.clear_session_messages(self.current_session_id)
+        return False
+
+    def export_active_session(self, format_type: str = "markdown") -> str:
+        if self.current_session_id:
+            return self.session_manager.export_session(self.current_session_id, format_type)
+        return ""

@@ -1,46 +1,175 @@
 """
-Chat Component Placeholder for AetherMind Cortex UI
+Chat Component for AetherMind Cortex UI (Phase 2)
+Provides streaming chat response, history list, syntax-highlighted code blocks, regenerate, clear, and export options.
 """
 
 import gradio as gr
+from typing import List, Tuple
+from app.controller import AppController
 
-def render_chat_tab():
-    """Renders the Chat reasoning engine UI tab placeholder."""
+def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
+    """Renders the real-time streaming chat tab."""
     with gr.Tab("💬 Reasoning Chat"):
-        gr.Markdown("### 🤖 Human-Centered Reasoning Workspace")
+        gr.Markdown("### 🤖 Local Ollama AI Reasoning Workspace")
         
         chatbot = gr.Chatbot(
-            value=[
-                (None, "Welcome to **AetherMind Cortex**! Phase 1 foundation shell is active. AI reasoning models will be connected in Phase 2.")
-            ],
-            height=500,
-            show_copy_button=True
+            value=[],
+            height=520,
+            show_copy_button=True,
+            render_markdown=True,
+            avatar_images=None
         )
-        
+
         with gr.Row():
             msg_input = gr.Textbox(
-                placeholder="Type your reasoning query or prompt here...",
+                placeholder="Type your query or prompt here for the local model...",
                 show_label=False,
-                scale=5
+                scale=5,
+                lines=2
             )
-            send_btn = gr.Button("Send Prompt", variant="primary", scale=1)
+            send_btn = gr.Button("🚀 Send Prompt", variant="primary", scale=1)
 
-        with gr.Accordion("🔍 Reasoning Log & Chain-of-Thought Pipeline (Placeholder)", open=False):
-            gr.Markdown("""
-            ```json
-            {
-              "phase": "Phase 1 - Shell Active",
-              "reasoning_steps": [],
-              "status": "Ready for AI Model Connection"
-            }
-            ```
-            """)
+        # Action bar: Stop, Regenerate, Clear, Export
+        with gr.Row():
+            stop_btn = gr.Button("🛑 Stop Generation", variant="stop", size="sm")
+            regen_btn = gr.Button("🔄 Regenerate Response", variant="secondary", size="sm")
+            clear_btn = gr.Button("🗑️ Clear Chat", variant="secondary", size="sm")
+            export_md_btn = gr.Button("📥 Export Markdown", variant="secondary", size="sm")
+            export_txt_btn = gr.Button("📄 Export TXT", variant="secondary", size="sm")
 
-        def user_send(user_message, history):
+        export_file = gr.File(label="Download Chat Export", visible=False)
+
+        # Performance Metrics Accordion
+        with gr.Accordion("📊 Generation Metrics & Performance", open=True):
+            metrics_md = gr.Markdown("⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens")
+
+        def load_active_history():
+            messages = controller.get_active_messages()
+            history = []
+            user_temp = None
+            for m in messages:
+                if m["role"] == "user":
+                    user_temp = m["content"]
+                elif m["role"] == "assistant":
+                    if user_temp is not None:
+                        history.append((user_temp, m["content"]))
+                        user_temp = None
+                    else:
+                        history.append((None, m["content"]))
+            if user_temp is not None:
+                history.append((user_temp, None))
+            return history
+
+        # Event stream generator for user interaction
+        def user_submit(user_message: str, history: List[Tuple[str, str]], model_name: str):
             if not user_message.strip():
-                return "", history
-            history = history + [(user_message, "AetherMind Phase 1: Interactive shell active. Reasoning engine pipeline ready for model attachment.")]
-            return "", history
+                yield history, "", "⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens"
+                return
 
-        send_btn.click(fn=user_send, inputs=[msg_input, chatbot], outputs=[msg_input, chatbot])
-        msg_input.submit(fn=user_send, inputs=[msg_input, chatbot], outputs=[msg_input, chatbot])
+            # Append user message to controller DB
+            controller.add_user_message(user_message)
+            history.append((user_message, "... 🤔 Thinking ..."))
+            yield history, "", "⚡ **Generating streaming response...**"
+
+            # Prepare message payload for Ollama
+            formatted_messages = []
+            for u, a in history[:-1]:
+                if u:
+                    formatted_messages.append({"role": "user", "content": u})
+                if a:
+                    formatted_messages.append({"role": "assistant", "content": a})
+            formatted_messages.append({"role": "user", "content": user_message})
+
+            # Stream from Ollama Engine
+            assistant_accumulated = ""
+            final_metrics = ""
+
+            for chunk in controller.llm_engine.stream_chat(model=model_name, messages=formatted_messages):
+                assistant_accumulated = chunk["accumulated"]
+                history[-1] = (user_message, assistant_accumulated)
+                
+                m = chunk["metrics"]
+                final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
+                
+                yield history, "", final_metrics
+
+            # Save completed assistant response to DB
+            controller.add_assistant_message(assistant_accumulated)
+            yield history, "", final_metrics
+
+        # Event stream generator for regenerate action
+        def regenerate_submit(history: List[Tuple[str, str]], model_name: str):
+            if not history:
+                yield history, "⚡ No messages to regenerate."
+                return
+
+            last_user_msg = history[-1][0]
+            if not last_user_msg:
+                yield history, "⚡ Cannot regenerate without user message."
+                return
+
+            history[-1] = (last_user_msg, "... 🔄 Regenerating ...")
+            yield history, "⚡ **Regenerating streaming response...**"
+
+            formatted_messages = []
+            for u, a in history[:-1]:
+                if u:
+                    formatted_messages.append({"role": "user", "content": u})
+                if a:
+                    formatted_messages.append({"role": "assistant", "content": a})
+            formatted_messages.append({"role": "user", "content": last_user_msg})
+
+            assistant_accumulated = ""
+            final_metrics = ""
+
+            for chunk in controller.llm_engine.stream_chat(model=model_name, messages=formatted_messages):
+                assistant_accumulated = chunk["accumulated"]
+                history[-1] = (last_user_msg, assistant_accumulated)
+                
+                m = chunk["metrics"]
+                final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
+                
+                yield history, final_metrics
+
+            controller.add_assistant_message(assistant_accumulated)
+            yield history, final_metrics
+
+        # Event triggers
+        send_event = send_btn.click(
+            fn=user_submit,
+            inputs=[msg_input, chatbot, model_dropdown],
+            outputs=[chatbot, msg_input, metrics_md]
+        )
+        submit_event = msg_input.submit(
+            fn=user_submit,
+            inputs=[msg_input, chatbot, model_dropdown],
+            outputs=[chatbot, msg_input, metrics_md]
+        )
+
+        stop_btn.click(fn=None, cancels=[send_event, submit_event])
+
+        regen_btn.click(
+            fn=regenerate_submit,
+            inputs=[chatbot, model_dropdown],
+            outputs=[chatbot, metrics_md]
+        )
+
+        def clear_chat():
+            controller.clear_active_session()
+            return [], "⚡ Chat cleared."
+
+        clear_btn.click(fn=clear_chat, outputs=[chatbot, metrics_md])
+
+        # Export Handlers
+        def export_chat(fmt: str):
+            content = controller.export_active_session(fmt)
+            filename = f"chat_export.{'md' if fmt == 'markdown' else 'txt'}"
+            filepath = f"logs/{filename}"
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(content)
+            return gr.update(value=filepath, visible=True)
+
+        export_md_btn.click(fn=lambda: export_chat("markdown"), outputs=[export_file])
+        export_txt_btn.click(fn=lambda: export_chat("txt"), outputs=[export_file])
+
+        return chatbot, load_active_history

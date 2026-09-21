@@ -1,6 +1,6 @@
 """
-AetherMind Cortex UI Layout Assembly
-Combines sidebar, chat, settings, about, and status bar into a single Gradio Blocks layout.
+AetherMind Cortex UI Layout Assembly (Phase 2)
+Assembles sidebar, streaming chat, settings, about, and status bar.
 """
 
 import gradio as gr
@@ -13,30 +13,53 @@ from ui.components.about_tab import render_about_tab
 from ui.components.status_bar import render_status_bar
 
 def build_ui(controller: AppController) -> gr.Blocks:
-    """Assembles and returns the Gradio UI Blocks interface."""
+    """Assembles and returns the Gradio UI Blocks interface for Phase 2."""
     current_theme_name = controller.settings_manager.get_setting("app.theme", "dark")
     theme = get_theme(current_theme_name)
     
     with gr.Blocks(
         theme=theme,
         css=CUSTOM_CSS,
-        title="AetherMind Cortex - Human-Centered AI Reasoning Engine"
+        title="AetherMind Cortex - Offline AI Reasoning Engine"
     ) as demo:
         with gr.Row(elem_classes=["aether-header"]):
-            gr.Markdown("# 🧠 AetherMind Cortex")
+            gr.Markdown("# 🧠 AetherMind Cortex (Offline Local AI)")
             
         with gr.Row():
             # Left Sidebar Navigation & Controls
-            render_sidebar(controller)
+            model_dropdown, session_dropdown, new_chat_btn = render_sidebar(controller)
             
             # Main View Area with Tabs
             with gr.Column(scale=4):
                 with gr.Tabs():
-                    render_chat_tab()
+                    chatbot, load_active_history = render_chat_tab(controller, model_dropdown)
                     render_settings_tab(controller)
                     render_about_tab(controller)
                     
         # Bottom Persistent Status Bar
         render_status_bar(controller)
+
+        # Connect Sidebar Session Controls
+        def on_new_chat():
+            new_id = controller.create_new_session(model_dropdown.value)
+            sessions = controller.session_manager.list_sessions()
+            choices = [s["title"] for s in sessions]
+            return gr.update(choices=choices, value=choices[0]), []
+
+        new_chat_btn.click(fn=on_new_chat, outputs=[session_dropdown, chatbot])
+
+        # Connect Session Switch
+        def on_session_change(selected_title: str):
+            sessions = controller.session_manager.list_sessions()
+            matched = [s for s in sessions if s["title"] == selected_title]
+            if matched:
+                controller.switch_session(matched[0]["id"])
+                return load_active_history()
+            return []
+
+        session_dropdown.change(fn=on_session_change, inputs=[session_dropdown], outputs=[chatbot])
+
+        # Initial Load Event
+        demo.load(fn=load_active_history, outputs=[chatbot])
         
     return demo

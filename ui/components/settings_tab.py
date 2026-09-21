@@ -1,5 +1,5 @@
 """
-Settings Component for AetherMind Cortex UI
+Settings Component for AetherMind Cortex UI (Phase 2)
 """
 
 import gradio as gr
@@ -8,8 +8,17 @@ from app.controller import AppController
 def render_settings_tab(controller: AppController):
     """Renders application settings tab."""
     with gr.Tab("⚙️ System Settings"):
-        gr.Markdown("### Application Configuration & Theme Controls")
+        gr.Markdown("### Application Configuration & Model Parameters")
         
+        with gr.Group(elem_classes=["card-panel"]):
+            gr.Markdown("#### Local LLM & Ollama Configuration")
+            ollama_host_input = gr.Textbox(
+                value=controller.llm_engine.host,
+                label="Ollama Server Host URL"
+            )
+            temp_slider = gr.Slider(minimum=0.0, maximum=1.5, value=0.7, step=0.1, label="Temperature (Creativity)")
+            top_p_slider = gr.Slider(minimum=0.0, maximum=1.0, value=0.9, step=0.05, label="Top P (Nucleus Sampling)")
+
         with gr.Group(elem_classes=["card-panel"]):
             gr.Markdown("#### Appearance")
             theme_dropdown = gr.Dropdown(
