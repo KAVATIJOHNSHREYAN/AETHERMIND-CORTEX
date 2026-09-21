@@ -1,6 +1,6 @@
 """
-Chat Component for AetherMind Cortex UI (Phase 5 Expanded)
-Includes memory context injection, RAG document context, and adaptive user profile personalization.
+Chat Component for AetherMind Cortex UI (Phase 6 Expanded)
+Includes Cognitive Reasoning Pipeline, Developer Mode Inspector, Memory, RAG Context, and Adaptive Persona.
 """
 
 import gradio as gr
@@ -8,13 +8,13 @@ from typing import List, Tuple
 from app.controller import AppController
 
 def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
-    """Renders the real-time streaming chat tab with memory, RAG, and adaptive profile context awareness."""
-    with gr.Tab("💬 Reasoning Chat"):
-        gr.Markdown("### 🤖 Local Ollama AI Reasoning Workspace")
+    """Renders the real-time cognitive reasoning chat workspace with Developer Mode Inspector."""
+    with gr.Tab("💬 Reasoning Workspace"):
+        gr.Markdown("### 🤖 Cognitive AI Reasoning Workspace & Consultant Pipeline")
         
         chatbot = gr.Chatbot(
             value=[],
-            height=480,
+            height=460,
             show_copy_button=True,
             render_markdown=True,
             avatar_images=None
@@ -22,26 +22,27 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
 
         with gr.Row():
             msg_input = gr.Textbox(
-                placeholder="Type your query or prompt here for the local model...",
+                placeholder="Type your technical prompt or complex query here...",
                 show_label=False,
                 scale=5,
                 lines=2
             )
-            send_btn = gr.Button("🚀 Send Prompt", variant="primary", scale=1)
+            send_btn = gr.Button("🚀 Execute Reasoning", variant="primary", scale=1)
 
-        # Action bar: Stop, Regenerate, Clear, Export
+        # Action bar: Stop, Regenerate, Clear, Export, Dev Mode Toggle
         with gr.Row():
             stop_btn = gr.Button("🛑 Stop Generation", variant="stop", size="sm")
             regen_btn = gr.Button("🔄 Regenerate Response", variant="secondary", size="sm")
-            clear_btn = gr.Button("🗑️ Clear Chat", variant="secondary", size="sm")
-            export_md_btn = gr.Button("📥 Export Markdown", variant="secondary", size="sm")
+            clear_btn = gr.Button("🗑️ Clear Workspace", variant="secondary", size="sm")
+            export_md_btn = gr.Button("📥 Export MD", variant="secondary", size="sm")
             export_txt_btn = gr.Button("📄 Export TXT", variant="secondary", size="sm")
 
         export_file = gr.File(label="Download Chat Export", visible=False)
 
-        # Performance, Citations & Profile Personalization Accordion
-        with gr.Accordion("🧠 Persona Personalization, Citations & Metrics", open=True):
-            profile_persona_md = gr.Markdown("*Adaptive User Personalization Active*")
+        # Developer Mode Reasoning Inspector Accordion
+        with gr.Accordion("⚙️ Developer Mode: Cognitive Reasoning Inspection Pipeline", open=True):
+            dev_mode_toggle = gr.Checkbox(label="Enable Developer Mode Reasoning Inspection Logs", value=True)
+            reasoning_inspection_md = gr.Markdown("*Reasoning pipeline inspection logs will appear here during execution.*")
             rag_citations_md = gr.Markdown("*No RAG citations retrieved.*")
             metrics_md = gr.Markdown("⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens")
 
@@ -63,41 +64,34 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
             return history
 
         # Event stream generator for user interaction
-        def user_submit(user_message: str, history: List[Tuple[str, str]], model_name: str):
+        def user_submit(user_message: str, history: List[Tuple[str, str]], model_name: str, dev_mode: bool):
             if not user_message.strip():
-                yield history, "", "", "*No prompt entered.*", "⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens"
+                yield history, "", "*No prompt entered.*", "*No citations.*", "⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens"
                 return
 
             controller.add_user_message(user_message)
-            history.append((user_message, "... 🤔 Thinking & Adapting to User Profile ..."))
+            history.append((user_message, "... 🧠 Executing Cognitive Reasoning Pipeline ..."))
 
-            # 1. Profile Persona Context
-            profile_context = controller.profile_manager.get_personalized_prompt_context()
-            prof_display = f"👤 **Personalized Persona Context:** `{controller.profile_manager.get_profile_attribute('user_name')}` ({controller.profile_manager.get_profile_attribute('profession')})" if profile_context else "*Personalization Disabled*"
+            # 1. Intent Analysis & Reasoning Prompt Setup
+            reasoning_system_prompt = controller.reasoning_engine.generate_reasoning_pipeline_prompt(
+                prompt=user_message,
+                user_context=controller.profile_manager.get_personalized_prompt_context(),
+                memory_context=controller.memory_manager.get_context_prompt_injection(user_message),
+                rag_context=controller.knowledge_engine.get_rag_context_injection(user_message)[0]
+            )
 
-            # 2. Long-Term Memory Context
-            memory_context = controller.memory_manager.get_context_prompt_injection(user_message)
-            
-            # 3. RAG Knowledge Context & Citations
-            rag_context, citations = controller.knowledge_engine.get_rag_context_injection(user_message)
-
+            # RAG Citations Display
+            _, citations = controller.knowledge_engine.get_rag_context_injection(user_message)
             cit_display = ""
             if citations:
                 cit_display += "#### 📄 Retrived RAG Document Citations:\n"
                 for idx, c in enumerate(citations, 1):
                     cit_display += f"**[{idx}] {c['source']}** (Chunk {c['chunk_index']}, Confidence: {c['confidence']}%): `{c['content_snippet']}`\n\n"
             else:
-                cit_display = "*No document citations retrieved for this prompt.*"
+                cit_display = "*No document citations retrieved.*"
 
-            combined_system_prompt = "You are AetherMind Cortex, a human-centered AI engine."
-            if profile_context:
-                combined_system_prompt += "\n" + profile_context
-            if memory_context:
-                combined_system_prompt += "\n" + memory_context
-            if rag_context:
-                combined_system_prompt += "\n" + rag_context
-
-            yield history, "", prof_display, cit_display, "⚡ **Generating streaming response...**"
+            inspection_display = "*Analyzing intent & pipeline steps...*"
+            yield history, "", inspection_display, cit_display, "⚡ **Executing cognitive reasoning pipeline...**"
 
             formatted_messages = []
             for u, a in history[:-1]:
@@ -109,57 +103,64 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
 
             assistant_accumulated = ""
             final_metrics = ""
+            latest_metrics = {"elapsed_sec": 0, "token_count": 0}
 
             for chunk in controller.llm_engine.stream_chat(
                 model=model_name,
                 messages=formatted_messages,
-                system_prompt=combined_system_prompt
+                system_prompt=reasoning_system_prompt
             ):
                 assistant_accumulated = chunk["accumulated"]
                 history[-1] = (user_message, assistant_accumulated)
                 
                 m = chunk["metrics"]
+                latest_metrics = m
                 final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
-                
-                yield history, "", prof_display, cit_display, final_metrics
+
+                # Update Developer Mode Inspection Markdown
+                if dev_mode:
+                    dev_log = controller.reasoning_engine.build_developer_inspection_log(user_message, m['elapsed_sec'], m['token_count'])
+                    inspection_display = f"#### ⚙️ Developer Inspection Pipeline Log\n"
+                    inspection_display += f"- **Detected Intent:** `{dev_log['intent']}` (Complex: {dev_log['is_complex']})\n"
+                    inspection_display += f"- **Confidence Rating:** `{dev_log['confidence_score']}`\n"
+                    inspection_display += "##### 🧩 Chain-of-Thought Steps:\n"
+                    for step in dev_log["reasoning_steps"]:
+                        inspection_display += f"  - **Step {step['step']}: {step['title']}**: {step['detail']}\n"
+                    inspection_display += f"##### ⚖️ Alternatives Evaluated:\n"
+                    for alt in dev_log["alternatives_evaluated"]:
+                        inspection_display += f"  - `{alt}`\n"
+                else:
+                    inspection_display = "*Developer Mode Disabled.*"
+
+                yield history, "", inspection_display, cit_display, final_metrics
 
             controller.add_assistant_message(assistant_accumulated)
-            yield history, "", prof_display, cit_display, final_metrics
+            yield history, "", inspection_display, cit_display, final_metrics
 
-        def regenerate_submit(history: List[Tuple[str, str]], model_name: str):
+        def regenerate_submit(history: List[Tuple[str, str]], model_name: str, dev_mode: bool):
             if not history:
-                yield history, "", "*No prompt.*", "⚡ No messages to regenerate."
+                yield history, "*No prompt.*", "*No citations.*", "⚡ No messages to regenerate."
                 return
 
             last_user_msg = history[-1][0]
             if not last_user_msg:
-                yield history, "", "*No user message.*", "⚡ Cannot regenerate without user message."
+                yield history, "*No user message.*", "*No citations.*", "⚡ Cannot regenerate without user message."
                 return
 
-            history[-1] = (last_user_msg, "... 🔄 Regenerating ...")
-            profile_context = controller.profile_manager.get_personalized_prompt_context()
-            prof_display = f"👤 **Personalized Persona Context Active:** `{controller.profile_manager.get_profile_attribute('user_name')}`" if profile_context else "*Personalization Disabled*"
-            
-            memory_context = controller.memory_manager.get_context_prompt_injection(last_user_msg)
-            rag_context, citations = controller.knowledge_engine.get_rag_context_injection(last_user_msg)
+            history[-1] = (last_user_msg, "... 🔄 Regenerating Cognitive Pipeline ...")
 
-            cit_display = ""
-            if citations:
-                cit_display += "#### 📄 Retrived RAG Document Citations:\n"
-                for idx, c in enumerate(citations, 1):
-                    cit_display += f"**[{idx}] {c['source']}** (Chunk {c['chunk_index']}): `{c['content_snippet']}`\n\n"
-            else:
-                cit_display = "*No document citations retrieved.*"
+            reasoning_system_prompt = controller.reasoning_engine.generate_reasoning_pipeline_prompt(
+                prompt=last_user_msg,
+                user_context=controller.profile_manager.get_personalized_prompt_context(),
+                memory_context=controller.memory_manager.get_context_prompt_injection(last_user_msg),
+                rag_context=controller.knowledge_engine.get_rag_context_injection(last_user_msg)[0]
+            )
 
-            combined_system_prompt = "You are AetherMind Cortex, a human-centered AI engine."
-            if profile_context:
-                combined_system_prompt += "\n" + profile_context
-            if memory_context:
-                combined_system_prompt += "\n" + memory_context
-            if rag_context:
-                combined_system_prompt += "\n" + rag_context
+            _, citations = controller.knowledge_engine.get_rag_context_injection(last_user_msg)
+            cit_display = f"#### 📄 Retrived RAG Document Citations:\n" + "\n".join([f"**[{idx+1}] {c['source']}**: `{c['content_snippet']}`" for idx, c in enumerate(citations)]) if citations else "*No document citations retrieved.*"
+            inspection_display = "*Regenerating reasoning steps...*"
 
-            yield history, prof_display, cit_display, "⚡ **Regenerating streaming response...**"
+            yield history, inspection_display, cit_display, "⚡ **Regenerating cognitive reasoning pipeline...**"
 
             formatted_messages = []
             for u, a in history[:-1]:
@@ -175,44 +176,52 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
             for chunk in controller.llm_engine.stream_chat(
                 model=model_name,
                 messages=formatted_messages,
-                system_prompt=combined_system_prompt
+                system_prompt=reasoning_system_prompt
             ):
                 assistant_accumulated = chunk["accumulated"]
                 history[-1] = (last_user_msg, assistant_accumulated)
                 
                 m = chunk["metrics"]
                 final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
-                
-                yield history, prof_display, cit_display, final_metrics
+
+                if dev_mode:
+                    dev_log = controller.reasoning_engine.build_developer_inspection_log(last_user_msg, m['elapsed_sec'], m['token_count'])
+                    inspection_display = f"#### ⚙️ Developer Inspection Pipeline Log\n- **Detected Intent:** `{dev_log['intent']}`\n- **Confidence Rating:** `{dev_log['confidence_score']}`\n"
+                    for step in dev_log["reasoning_steps"]:
+                        inspection_display += f"  - **Step {step['step']}: {step['title']}**: {step['detail']}\n"
+                else:
+                    inspection_display = "*Developer Mode Disabled.*"
+
+                yield history, inspection_display, cit_display, final_metrics
 
             controller.add_assistant_message(assistant_accumulated)
-            yield history, prof_display, cit_display, final_metrics
+            yield history, inspection_display, cit_display, final_metrics
 
         # Event triggers
         send_event = send_btn.click(
             fn=user_submit,
-            inputs=[msg_input, chatbot, model_dropdown],
-            outputs=[chatbot, msg_input, profile_persona_md, rag_citations_md, metrics_md]
+            inputs=[msg_input, chatbot, model_dropdown, dev_mode_toggle],
+            outputs=[chatbot, msg_input, reasoning_inspection_md, rag_citations_md, metrics_md]
         )
         submit_event = msg_input.submit(
             fn=user_submit,
-            inputs=[msg_input, chatbot, model_dropdown],
-            outputs=[chatbot, msg_input, profile_persona_md, rag_citations_md, metrics_md]
+            inputs=[msg_input, chatbot, model_dropdown, dev_mode_toggle],
+            outputs=[chatbot, msg_input, reasoning_inspection_md, rag_citations_md, metrics_md]
         )
 
         stop_btn.click(fn=None, cancels=[send_event, submit_event])
 
         regen_btn.click(
             fn=regenerate_submit,
-            inputs=[chatbot, model_dropdown],
-            outputs=[chatbot, profile_persona_md, rag_citations_md, metrics_md]
+            inputs=[chatbot, model_dropdown, dev_mode_toggle],
+            outputs=[chatbot, reasoning_inspection_md, rag_citations_md, metrics_md]
         )
 
         def clear_chat():
             controller.clear_active_session()
-            return [], "*Cleared profile context.*", "*Cleared citations.*", "⚡ Chat cleared."
+            return [], "*Cleared inspection log.*", "*Cleared citations.*", "⚡ Chat workspace cleared."
 
-        clear_btn.click(fn=clear_chat, outputs=[chatbot, profile_persona_md, rag_citations_md, metrics_md])
+        clear_btn.click(fn=clear_chat, outputs=[chatbot, reasoning_inspection_md, rag_citations_md, metrics_md])
 
         # Export Handlers
         def export_chat(fmt: str):

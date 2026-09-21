@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI (Phase 5 Expanded)
+About Page Component for AetherMind Cortex UI (Phase 6 Expanded)
 """
 
 import gradio as gr
@@ -23,11 +23,12 @@ def render_about_tab(controller: AppController):
             """)
             
         gr.Markdown("""
-        ### Phase 5 Human Profile Engine Milestones
-        - ✅ User Identity & Persona Engine (Name, Role, Experience, Preferred Language)
-        - ✅ Preference Engine (Coding Style, Writing Style, Explanation Depth)
-        - ✅ Active User Goals & Milestones Tracking Engine
-        - ✅ Adaptive Personalization Context Injection into local Ollama streams
-        - ✅ Profile Dashboard UI with JSON Export, Import & Privacy Controls
-        - ✅ 100% Offline Architecture - Zero external API/cloud telemetry
+        ### Phase 6 Cognitive Reasoning Engine Milestones
+        - ✅ Multi-Step Cognitive Reasoning Pipeline (Intent → Goal → Analysis → Alternatives → Trade-offs → Solution)
+        - ✅ Intent Detection Engine & Clarification Generator
+        - ✅ Alternative Solution Evaluator (Optimal, Faster, Simpler, Scalable)
+        - ✅ Trade-off Analysis & Risk Engine
+        - ✅ Confidence Engine & Uncertainty Score Calculator
+        - ✅ Developer Mode Reasoning Inspector Accordion in Chat Workspace
+        - ✅ 100% Offline Architecture - Zero external cloud dependency
         """)

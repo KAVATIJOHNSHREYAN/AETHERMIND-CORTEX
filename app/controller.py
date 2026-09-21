@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Central Application Controller (Phase 5 Expanded)
-Orchestrates Config, DB, Ollama Engine, Sessions, Long-Term Memory, Knowledge Engine, and Human Profile Engine.
+AetherMind Cortex Central Application Controller (Phase 6 Expanded)
+Orchestrates Config, DB, Ollama Engine, Sessions, Long-Term Memory, Knowledge Engine, Profile Engine, and Cognitive Reasoning Engine.
 """
 
 from typing import Dict, Any, Optional, List
@@ -15,11 +15,12 @@ from core.session_manager import SessionManager
 from core.memory_manager import MemoryManager
 from core.knowledge_engine import KnowledgeEngine
 from core.profile_manager import ProfileManager
+from core.reasoning_engine import ReasoningEngine
 
 logger = get_logger("AppController")
 
 class AppController:
-    """Central Application Controller managing lifecycle, LLM engine, sessions, memory, RAG, and profile."""
+    """Central Application Controller managing lifecycle, LLM engine, sessions, memory, RAG, profile, and reasoning engine."""
     _instance: Optional["AppController"] = None
 
     def __new__(cls):
@@ -32,7 +33,7 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller (Phase 5)...")
+        logger.info("Initializing AetherMind Cortex Central Controller (Phase 6)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
@@ -40,19 +41,20 @@ class AppController:
         # Initialize SQLite DB
         self.db_initialized = initialize_database(self.db_conn)
         
-        # Initialize LLM Engine, Session Manager, Memory Engine, Knowledge Engine & Profile Manager
+        # Initialize Engines
         self.llm_engine = OllamaEngine()
         self.session_manager = SessionManager(self.db_conn)
         self.memory_manager = MemoryManager(self.db_conn)
         self.knowledge_engine = KnowledgeEngine(self.db_conn)
         self.profile_manager = ProfileManager(self.db_conn)
+        self.reasoning_engine = ReasoningEngine()
         
         # Active session state
         self.current_session_id: Optional[str] = None
         self.ensure_active_session()
 
         self._initialized = True
-        logger.info("AetherMind Cortex Controller Phase 5 initialized successfully.")
+        logger.info("AetherMind Cortex Controller Phase 6 initialized successfully.")
 
     def ensure_active_session(self) -> str:
         """Ensures there is an active session loaded."""
