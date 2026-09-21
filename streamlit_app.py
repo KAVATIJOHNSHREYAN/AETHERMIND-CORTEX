@@ -106,6 +106,17 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(56, 189, 248, 0.4) !important;
     }
 
+    /* Override Native Streamlit File Uploader Box */
+    [data-testid="stFileUploader"], [data-testid="stFileUploader"] section {
+        background-color: #080d1a !important;
+        border: 1px dashed rgba(56, 189, 248, 0.35) !important;
+        border-radius: 14px !important;
+        color: #f8fafc !important;
+    }
+    [data-testid="stFileUploader"] span, [data-testid="stFileUploader"] small, [data-testid="stFileUploader"] div {
+        color: #cbd5e1 !important;
+    }
+
     /* Override Radio & Checkbox Indicators */
     div[role="radiogroup"] label, div[data-testid="stCheckbox"] label {
         color: #cbd5e1 !important;
