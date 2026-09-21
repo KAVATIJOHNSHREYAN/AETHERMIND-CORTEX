@@ -1,6 +1,6 @@
 """
-Chat Component for AetherMind Cortex UI (Phase 4 Expanded)
-Includes long-term memory context injection and RAG document context with source citations.
+Chat Component for AetherMind Cortex UI (Phase 5 Expanded)
+Includes memory context injection, RAG document context, and adaptive user profile personalization.
 """
 
 import gradio as gr
@@ -8,13 +8,13 @@ from typing import List, Tuple
 from app.controller import AppController
 
 def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
-    """Renders the real-time streaming chat tab with RAG & memory context awareness."""
+    """Renders the real-time streaming chat tab with memory, RAG, and adaptive profile context awareness."""
     with gr.Tab("💬 Reasoning Chat"):
         gr.Markdown("### 🤖 Local Ollama AI Reasoning Workspace")
         
         chatbot = gr.Chatbot(
             value=[],
-            height=500,
+            height=480,
             show_copy_button=True,
             render_markdown=True,
             avatar_images=None
@@ -39,9 +39,10 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
 
         export_file = gr.File(label="Download Chat Export", visible=False)
 
-        # RAG Source Citations & Performance Accordion
-        with gr.Accordion("📚 RAG Source Citations & Memory Context", open=True):
-            rag_citations_md = gr.Markdown("*No RAG citations or document context retrieved.*")
+        # Performance, Citations & Profile Personalization Accordion
+        with gr.Accordion("🧠 Persona Personalization, Citations & Metrics", open=True):
+            profile_persona_md = gr.Markdown("*Adaptive User Personalization Active*")
+            rag_citations_md = gr.Markdown("*No RAG citations retrieved.*")
             metrics_md = gr.Markdown("⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens")
 
         def load_active_history():
@@ -64,33 +65,39 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
         # Event stream generator for user interaction
         def user_submit(user_message: str, history: List[Tuple[str, str]], model_name: str):
             if not user_message.strip():
-                yield history, "", "*No prompt entered.*", "⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens"
+                yield history, "", "", "*No prompt entered.*", "⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens"
                 return
 
             controller.add_user_message(user_message)
-            history.append((user_message, "... 🤔 Thinking, Recalling Memories & Searching Knowledge Base ..."))
+            history.append((user_message, "... 🤔 Thinking & Adapting to User Profile ..."))
 
-            # 1. Memory Context
+            # 1. Profile Persona Context
+            profile_context = controller.profile_manager.get_personalized_prompt_context()
+            prof_display = f"👤 **Personalized Persona Context:** `{controller.profile_manager.get_profile_attribute('user_name')}` ({controller.profile_manager.get_profile_attribute('profession')})" if profile_context else "*Personalization Disabled*"
+
+            # 2. Long-Term Memory Context
             memory_context = controller.memory_manager.get_context_prompt_injection(user_message)
             
-            # 2. RAG Knowledge Context & Citations
+            # 3. RAG Knowledge Context & Citations
             rag_context, citations = controller.knowledge_engine.get_rag_context_injection(user_message)
 
             cit_display = ""
             if citations:
                 cit_display += "#### 📄 Retrived RAG Document Citations:\n"
                 for idx, c in enumerate(citations, 1):
-                    cit_display += f"**[{idx}] {c['source']}** (Chunk {c['chunk_index']}): `{c['content_snippet']}`\n\n"
+                    cit_display += f"**[{idx}] {c['source']}** (Chunk {c['chunk_index']}, Confidence: {c['confidence']}%): `{c['content_snippet']}`\n\n"
             else:
                 cit_display = "*No document citations retrieved for this prompt.*"
 
-            combined_system_prompt = "You are AetherMind Cortex, a privacy-first AI engine."
+            combined_system_prompt = "You are AetherMind Cortex, a human-centered AI engine."
+            if profile_context:
+                combined_system_prompt += "\n" + profile_context
             if memory_context:
                 combined_system_prompt += "\n" + memory_context
             if rag_context:
                 combined_system_prompt += "\n" + rag_context
 
-            yield history, "", cit_display, "⚡ **Generating streaming response...**"
+            yield history, "", prof_display, cit_display, "⚡ **Generating streaming response...**"
 
             formatted_messages = []
             for u, a in history[:-1]:
@@ -114,22 +121,25 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
                 m = chunk["metrics"]
                 final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
                 
-                yield history, "", cit_display, final_metrics
+                yield history, "", prof_display, cit_display, final_metrics
 
             controller.add_assistant_message(assistant_accumulated)
-            yield history, "", cit_display, final_metrics
+            yield history, "", prof_display, cit_display, final_metrics
 
         def regenerate_submit(history: List[Tuple[str, str]], model_name: str):
             if not history:
-                yield history, "*No prompt.*", "⚡ No messages to regenerate."
+                yield history, "", "*No prompt.*", "⚡ No messages to regenerate."
                 return
 
             last_user_msg = history[-1][0]
             if not last_user_msg:
-                yield history, "*No user message.*", "⚡ Cannot regenerate without user message."
+                yield history, "", "*No user message.*", "⚡ Cannot regenerate without user message."
                 return
 
             history[-1] = (last_user_msg, "... 🔄 Regenerating ...")
+            profile_context = controller.profile_manager.get_personalized_prompt_context()
+            prof_display = f"👤 **Personalized Persona Context Active:** `{controller.profile_manager.get_profile_attribute('user_name')}`" if profile_context else "*Personalization Disabled*"
+            
             memory_context = controller.memory_manager.get_context_prompt_injection(last_user_msg)
             rag_context, citations = controller.knowledge_engine.get_rag_context_injection(last_user_msg)
 
@@ -139,15 +149,17 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
                 for idx, c in enumerate(citations, 1):
                     cit_display += f"**[{idx}] {c['source']}** (Chunk {c['chunk_index']}): `{c['content_snippet']}`\n\n"
             else:
-                cit_display = "*No document citations retrieved for this prompt.*"
+                cit_display = "*No document citations retrieved.*"
 
-            combined_system_prompt = "You are AetherMind Cortex, a privacy-first AI engine."
+            combined_system_prompt = "You are AetherMind Cortex, a human-centered AI engine."
+            if profile_context:
+                combined_system_prompt += "\n" + profile_context
             if memory_context:
                 combined_system_prompt += "\n" + memory_context
             if rag_context:
                 combined_system_prompt += "\n" + rag_context
 
-            yield history, cit_display, "⚡ **Regenerating streaming response...**"
+            yield history, prof_display, cit_display, "⚡ **Regenerating streaming response...**"
 
             formatted_messages = []
             for u, a in history[:-1]:
@@ -171,21 +183,21 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
                 m = chunk["metrics"]
                 final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
                 
-                yield history, cit_display, final_metrics
+                yield history, prof_display, cit_display, final_metrics
 
             controller.add_assistant_message(assistant_accumulated)
-            yield history, cit_display, final_metrics
+            yield history, prof_display, cit_display, final_metrics
 
         # Event triggers
         send_event = send_btn.click(
             fn=user_submit,
             inputs=[msg_input, chatbot, model_dropdown],
-            outputs=[chatbot, msg_input, rag_citations_md, metrics_md]
+            outputs=[chatbot, msg_input, profile_persona_md, rag_citations_md, metrics_md]
         )
         submit_event = msg_input.submit(
             fn=user_submit,
             inputs=[msg_input, chatbot, model_dropdown],
-            outputs=[chatbot, msg_input, rag_citations_md, metrics_md]
+            outputs=[chatbot, msg_input, profile_persona_md, rag_citations_md, metrics_md]
         )
 
         stop_btn.click(fn=None, cancels=[send_event, submit_event])
@@ -193,14 +205,14 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
         regen_btn.click(
             fn=regenerate_submit,
             inputs=[chatbot, model_dropdown],
-            outputs=[chatbot, rag_citations_md, metrics_md]
+            outputs=[chatbot, profile_persona_md, rag_citations_md, metrics_md]
         )
 
         def clear_chat():
             controller.clear_active_session()
-            return [], "*Cleared citations context.*", "⚡ Chat cleared."
+            return [], "*Cleared profile context.*", "*Cleared citations.*", "⚡ Chat cleared."
 
-        clear_btn.click(fn=clear_chat, outputs=[chatbot, rag_citations_md, metrics_md])
+        clear_btn.click(fn=clear_chat, outputs=[chatbot, profile_persona_md, rag_citations_md, metrics_md])
 
         # Export Handlers
         def export_chat(fmt: str):

@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI (Phase 4 Expanded)
+About Page Component for AetherMind Cortex UI (Phase 5 Expanded)
 """
 
 import gradio as gr
@@ -23,11 +23,11 @@ def render_about_tab(controller: AppController):
             """)
             
         gr.Markdown("""
-        ### Phase 4 Offline Knowledge RAG Milestones
-        - ✅ PDF, DOCX, TXT, Markdown, and Code Document Ingestion & Text Chunking
-        - ✅ ChromaDB Knowledge Vector Database (`database/knowledge_vector/`)
-        - ✅ Hybrid Semantic Retrieval & RAG Context Prompt Injection
-        - ✅ Source Document Citations with Chunk Snippets in Chat UI
-        - ✅ Interactive Knowledge Dashboard UI (Upload, Index, Query)
-        - ✅ 100% Offline Architecture - Zero external API/cloud dependency
+        ### Phase 5 Human Profile Engine Milestones
+        - ✅ User Identity & Persona Engine (Name, Role, Experience, Preferred Language)
+        - ✅ Preference Engine (Coding Style, Writing Style, Explanation Depth)
+        - ✅ Active User Goals & Milestones Tracking Engine
+        - ✅ Adaptive Personalization Context Injection into local Ollama streams
+        - ✅ Profile Dashboard UI with JSON Export, Import & Privacy Controls
+        - ✅ 100% Offline Architecture - Zero external API/cloud telemetry
         """)
