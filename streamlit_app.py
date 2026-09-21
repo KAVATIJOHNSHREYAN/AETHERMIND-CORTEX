@@ -61,34 +61,84 @@ st.markdown("""
         border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
     }
 
-    /* Override Native Streamlit Chat Messages (Remove White/Grey Bubble Fill) */
-    [data-testid="stChatMessage"] {
-        background-color: rgba(13, 20, 36, 0.85) !important;
-        border: 1px solid rgba(56, 189, 248, 0.2) !important;
-        border-radius: 14px !important;
-        color: #f8fafc !important;
-        margin-bottom: 12px !important;
-    }
-    [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] span, [data-testid="stChatMessage"] div {
-        color: #f1f5f9 !important;
+    /* Global Layout Space Optimization (35% Increased Workspace Height) */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 95% !important;
     }
 
-    /* Override Chat Input Bar at Bottom (Remove White Wrapper & Red Border) */
+    /* Enhanced Chat Container Focus & Heights */
+    [data-testid="stChatMessageContainer"] {
+        min-height: 60vh !important;
+        padding: 16px !important;
+    }
+
+    /* Override Native Streamlit Chat Messages (Remove White/Grey Fill & Add Smooth Fade) */
+    [data-testid="stChatMessage"] {
+        background-color: rgba(13, 20, 36, 0.88) !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-radius: 18px !important;
+        color: #f8fafc !important;
+        margin-bottom: 16px !important;
+        padding: 18px 22px !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
+        animation: chatMsgFadeIn 0.35s ease-out !important;
+    }
+
+    @keyframes chatMsgFadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] span, [data-testid="stChatMessage"] div {
+        color: #f1f5f9 !important;
+        line-height: 1.65 !important;
+        font-size: 0.98rem !important;
+    }
+
+    /* Override Chat Input Bar at Bottom (Premium Glow & Focus State) */
     [data-testid="stBottom"], [data-testid="stBottom"] > div {
         background-color: #030611 !important;
         background: #030611 !important;
         box-shadow: none !important;
     }
     [data-testid="stChatInput"], [data-testid="stChatInput"] > div, div[data-baseweb="input"] {
-        background-color: #090e1a !important;
-        border: 1px solid rgba(56, 189, 248, 0.3) !important;
-        border-radius: 14px !important;
+        background-color: rgba(9, 14, 26, 0.95) !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+        border-radius: 20px !important;
         color: #f8fafc !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(56, 189, 248, 0.15) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    [data-testid="stChatInput"] textarea {
-        background-color: transparent !important;
-        color: #f8fafc !important;
+    [data-testid="stChatInput"]:focus-within, [data-testid="stChatInput"] > div:focus-within {
+        border-color: #38bdf8 !important;
+        box-shadow: 0 8px 40px rgba(56, 189, 248, 0.35), 0 0 20px rgba(168, 85, 247, 0.25) !important;
+    }
+    /* Animated Rotating Placeholder Transition */
+    @keyframes placeholderFade {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.9; }
+    }
+
+    [data-testid="stChatInput"] textarea::placeholder {
+        color: #94a3b8 !important;
+        font-style: italic !important;
+        animation: placeholderFade 3s ease-in-out infinite !important;
+    }
+
+    /* Send Button Highlight Styling */
+    [data-testid="stChatInput"] button {
+        background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%) !important;
+        border-radius: 12px !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    [data-testid="stChatInput"] button:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6) !important;
     }
 
     /* Override Native Streamlit Buttons (Sidebar & Main Area) */
@@ -424,26 +474,46 @@ if page_selection == "💬 Reasoning Workspace":
         </div>
         """, unsafe_allow_html=True)
 
-    # Hero Logo Artwork Container
-    st.markdown("""
-    <div style="text-align: center; padding: 24px 0;">
-        <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 340px; max-width: 85%; border-radius: 28px; box-shadow: 0 0 60px rgba(56, 189, 248, 0.35); border: 1px solid rgba(56, 189, 248, 0.3);" />
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Chat Messages History
+    # Hero Logo Artwork Container (Show centered artwork only on empty chat for maximum workspace height)
     messages = controller.get_active_messages()
-    for msg in messages:
-        with st.chat_message(msg["role"]):
-            st.write(msg["content"])
+    if not messages:
+        st.markdown("""
+        <div style="text-align: center; padding: 12px 0;">
+            <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 260px; max-width: 80%; border-radius: 24px; box-shadow: 0 0 50px rgba(56, 189, 248, 0.35); border: 1px solid rgba(56, 189, 248, 0.3);" />
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        for msg in messages:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
 
     # Handle preset prompt execution if clicked
     active_input = None
     if "preset_prompt" in st.session_state and st.session_state["preset_prompt"]:
         active_input = st.session_state.pop("preset_prompt")
 
-    # Chat Bar Controls
-    prompt = st.chat_input("Type your technical prompt or complex query here...")
+    # Rotating Placeholder Examples Array
+    placeholder_examples = [
+        "Design a VR application...",
+        "Review Python architecture...",
+        "Plan a multi-agent workflow...",
+        "Explain reinforcement learning...",
+        "Generate a system architecture...",
+        "Analyze this research paper...",
+        "Optimize my algorithm...",
+        "Create an AI reasoning pipeline...",
+        "Build an offline AI assistant...",
+        "Design a scalable backend..."
+    ]
+    if "placeholder_idx" not in st.session_state:
+        st.session_state["placeholder_idx"] = 0
+    else:
+        st.session_state["placeholder_idx"] = (st.session_state["placeholder_idx"] + 1) % len(placeholder_examples)
+    
+    current_placeholder = f"💡 {placeholder_examples[st.session_state['placeholder_idx']]} (Shift+Enter for new line)"
+
+    # Premium Prompt Composer
+    prompt = st.chat_input(current_placeholder)
     if not active_input and prompt:
         active_input = prompt
 
