@@ -162,7 +162,24 @@ st.markdown("""
         50% { transform: translate(-50%, -50%) scale(1.03); opacity: 0.065; filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.4)); }
     }
 
-    /* Cards & Containers */
+    /* Module Cards & Panels */
+    .module-card {
+        background: rgba(10, 16, 32, 0.85) !important;
+        border: 1px solid rgba(56, 189, 248, 0.22) !important;
+        border-radius: 16px !important;
+        padding: 20px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+        backdrop-filter: blur(16px) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .module-card:hover {
+        border-color: rgba(56, 189, 248, 0.45) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 12px 40px rgba(56, 189, 248, 0.15) !important;
+    }
+
     .cortex-card {
         background: rgba(10, 16, 32, 0.85) !important;
         border: 1px solid rgba(56, 189, 248, 0.25) !important;
@@ -420,63 +437,202 @@ if page_selection == "💬 Reasoning Workspace":
         st.markdown("⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens")
 
 elif page_selection == "🛠️ Expert Skills":
-    st.subheader("🛠️ Expert Skills Platform")
+    st.markdown("""
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🛠️ Expert Cognitive Skills Platform</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Enable, configure, and inject specialized domain reasoning capabilities into the AI pipeline.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     skills = controller.skill_manager.list_skills()
-    for s in skills:
-        enabled = st.toggle(f"**{s['name']}**", value=s['enabled'] == 1, help=s['description'])
-        if enabled != (s['enabled'] == 1):
-            controller.skill_manager.set_skill_status(s['skill_id'], enabled)
-            st.toast(f"Updated {s['name']} status!")
+    skill_cols = st.columns(2)
+    for idx, s in enumerate(skills):
+        with skill_cols[idx % 2]:
+            st.markdown(f"""
+            <div class="module-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div>
+                        <h4 style="margin:0 0 4px 0; color:#f8fafc; font-size: 1.05rem;">{s['name']}</h4>
+                        <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3);">ID: {s['skill_id']}</span>
+                    </div>
+                </div>
+                <p style="color:#94a3b8; font-size: 0.86rem; margin-bottom: 14px; min-height: 38px;">{s['description']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            enabled = st.toggle(f"Enable {s['name']}", value=s['enabled'] == 1, key=f"skill_tg_{s['skill_id']}")
+            if enabled != (s['enabled'] == 1):
+                controller.skill_manager.set_skill_status(s['skill_id'], enabled)
+                st.toast(f"Updated {s['name']} status!")
 
 elif page_selection == "🔌 Plugins & Workspaces":
-    st.subheader("🔌 Plugins & Workspace Switcher")
+    st.markdown("""
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🔌 Plugins & Workspace Switcher</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Manage multi-project environments and extend capabilities with desktop plugins.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("#### 📂 Active Workspaces")
+        st.markdown("### 📂 Active Workspaces")
         workspaces = controller.workspace_manager.list_workspaces()
         for w in workspaces:
-            st.write(f"- **{w['name']}**: `{w['path']}`")
+            active_badge = "<span style='background:rgba(34, 197, 94, 0.2); color:#22c55e; font-size:0.72rem; padding:2px 8px; border-radius:10px; border:1px solid rgba(34, 197, 94, 0.4);'>Active</span>" if w.get("is_active") else ""
+            desc = w.get('description', 'No description set')
+            st.markdown(f"""
+            <div class="module-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <h4 style="margin:0; color:#f8fafc; font-size:1.05rem;">📂 {w['name']}</h4>
+                    {active_badge}
+                </div>
+                <p style="margin:0 0 10px 0; color:#94a3b8; font-size:0.86rem;">{desc}</p>
+                <div style="font-size:0.75rem; color:#64748b;">ID: <code>{w['id']}</code></div>
+            </div>
+            """, unsafe_allow_html=True)
+            if not w.get("is_active"):
+                if st.button(f"Switch to {w['name']}", key=f"ws_btn_{w['id']}", use_container_width=True):
+                    controller.workspace_manager.set_active_workspace(w['id'])
+                    st.toast(f"Switched to workspace: {w['name']}")
+                    st.rerun()
+
     with col2:
-        st.markdown("#### 🧩 Installed Extension Plugins")
-        st.write(controller.plugin_manager.list_plugins())
+        st.markdown("### 🧩 Extension Plugins")
+        plugins = controller.plugin_manager.list_plugins()
+        for p in plugins:
+            p_status = "<span style='color:#22c55e;'>● Enabled</span>" if p.get('enabled') else "<span style='color:#64748b;'>○ Disabled</span>"
+            st.markdown(f"""
+            <div class="module-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <h4 style="margin:0; color:#f8fafc; font-size:1.05rem;">🧩 {p['name']}</h4>
+                    <span style="font-size:0.8rem;">{p_status}</span>
+                </div>
+                <p style="margin:0 0 10px 0; color:#94a3b8; font-size:0.85rem;">Version: <code>v{p.get('version', '1.0.0')}</code> | Permissions: <code>{p.get('permissions', 'standard')}</code></p>
+            </div>
+            """, unsafe_allow_html=True)
+            p_en = st.toggle(f"Enable {p['name']}", value=p.get('enabled') == 1, key=f"plg_tg_{p['id']}")
+            if p_en != (p.get('enabled') == 1):
+                controller.plugin_manager.set_plugin_status(p['id'], p_en)
+                st.toast(f"Updated plugin status!")
 
 elif page_selection == "📚 Knowledge Base":
-    st.subheader("📚 Knowledge Base (Offline RAG Engine)")
+    st.markdown("""
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Knowledge Base (Offline RAG Engine)</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Ingest private documents into ChromaDB vector store for instant, zero-cloud context retrieval.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     uploaded_files = st.file_uploader("Upload Documents to Ingest", accept_multiple_files=True, type=["pdf", "docx", "txt", "md", "py"])
     if uploaded_files:
         for f in uploaded_files:
             save_path = os.path.join("database", f.name)
+            os.makedirs("database", exist_ok=True)
             with open(save_path, "wb") as w:
                 w.write(f.getvalue())
             controller.knowledge_engine.ingest_document(save_path)
-        st.success(f"Ingested {len(uploaded_files)} documents into ChromaDB Vector Store!")
+        st.success(f"Successfully ingested {len(uploaded_files)} documents into ChromaDB Vector Store!")
         
-    st.markdown("#### 📄 Currently Indexed Documents")
+    st.markdown("### 📄 Currently Indexed Documents")
     docs = controller.knowledge_engine.list_indexed_documents()
     if docs:
-        st.table(docs)
+        for d in docs:
+            d_name = d.get('filename') or d.get('name') or d.get('id') or "Document"
+            d_chunks = d.get('chunk_count') or d.get('chunks') or 1
+            st.markdown(f"""
+            <div class="module-card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <b style="color:#f8fafc; font-size:0.95rem;">📄 {d_name}</b>
+                    <div style="font-size:0.78rem; color:#64748b;">Indexed Chunks: {d_chunks}</div>
+                </div>
+                <span style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; font-size:0.75rem; padding:4px 10px; border-radius:12px; border:1px solid rgba(56, 189, 248, 0.3);">Vector Indexed</span>
+            </div>
+            """, unsafe_allow_html=True)
     else:
-        st.caption("No documents indexed yet.")
+        st.info("No documents indexed yet. Upload files above to build your private offline knowledge index.")
 
 elif page_selection == "⚡ Automation":
-    st.subheader("⚡ Local Automation & Task Intelligence")
-    st.write(controller.workflow_engine.list_tasks(status="all"))
+    st.markdown("""
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">⚡ Local Automation & Task Intelligence</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Automate workflow tasks, monitor background AI processes, and optimize productivity.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    summary = controller.workflow_engine.get_productivity_summary()
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        st.metric("Total Tasks", summary.get("total_tasks", 0))
+    with m2:
+        st.metric("Completed Tasks", summary.get("completed_tasks", 0))
+    with m3:
+        st.metric("In Progress", summary.get("in_progress_tasks", 0))
+    with m4:
+        st.metric("Completion Rate", f"{summary.get('completion_rate_pct', 100.0)}%")
+        
+    st.markdown("### 📋 Workflow Task Backlog")
+    tasks = controller.workflow_engine.list_tasks(status="all")
+    if tasks:
+        for t in tasks:
+            st.markdown(f"""
+            <div class="module-card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h4 style="margin:0 0 4px 0; color:#f8fafc; font-size:1.02rem;">{t['title']}</h4>
+                    <span style="font-size:0.78rem; color:#94a3b8;">Project: {t.get('project_name', 'General')} | Priority: <b style="color:#38bdf8;">{t.get('priority', 'medium').upper()}</b></span>
+                </div>
+                <span style="background:rgba(30, 41, 59, 0.9); color:#e2e8f0; font-size:0.78rem; padding:4px 12px; border-radius:12px; border:1px solid rgba(56, 189, 248, 0.3);">{t.get('status', 'todo').upper()}</span>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.caption("No pending workflow tasks.")
 
 elif page_selection == "⚙️ Settings":
-    st.subheader("⚙️ System Settings & Preferences")
+    st.markdown("""
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">⚙️ System Settings & Preferences</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Configure LLM endpoints, local hardware acceleration, and application themes.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="module-card">
+        <h4 style="margin:0 0 16px 0; color:#f8fafc;">Local LLM Connection Settings</h4>
+    """, unsafe_allow_html=True)
     st.text_input("Ollama Host URL", value=controller.llm_engine.host)
-    st.selectbox("Application Theme", options=["dark", "light"], index=0)
+    st.selectbox("Default Temperature Preset", options=["0.2 (Precise / Code)", "0.7 (Balanced / General)", "1.0 (Creative / Brainstorming)"], index=1)
+    st.selectbox("Application Theme Mode", options=["Dark Cyberpunk Glassmorphism (Default)", "Light Mode"], index=0)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 elif page_selection == "🩺 Diagnostics":
-    st.subheader("🩺 System Diagnostics & Self-Healing Maintenance")
+    st.markdown("""
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🩺 System Diagnostics & Self-Healing Maintenance</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Run diagnostic checks and trigger self-healing automated system repairs.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     dcol1, dcol2 = st.columns(2)
     with dcol1:
-        if st.button("Run System Health Check", use_container_width=True):
-            st.json(controller.diagnostics_engine.run_full_diagnostics())
+        if st.button("🔍 Run Full Diagnostics Check", use_container_width=True):
+            diag = controller.diagnostics_engine.run_full_diagnostics()
+            st.json(diag)
     with dcol2:
-        if st.button("Execute Self-Healing Repair", use_container_width=True):
-            st.success(controller.diagnostics_engine.execute_self_healing_repair()["message"])
+        if st.button("🛠️ Execute Self-Healing Repair", use_container_width=True):
+            res = controller.diagnostics_engine.execute_self_healing_repair()
+            st.success(res.get("message", "Self-healing repair executed successfully!"))
 
 elif page_selection == "ℹ️ About":
-    st.subheader("ℹ️ About AetherMind Cortex")
-    st.markdown(f"**Version:** `{meta['version']}` ({meta['stage']})")
+    st.markdown(f"""
+    <div class="module-card" style="text-align: center; padding: 40px 20px;">
+        <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 120px; border-radius: 20px; box-shadow: 0 0 40px rgba(56, 189, 248, 0.4); margin-bottom: 16px;" />
+        <h2 style="margin:0 0 6px 0; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.8rem; font-weight: 800;">AetherMind Cortex</h2>
+        <p style="color: #94a3b8; font-size: 0.95rem; max-width: 600px; margin: 0 auto 20px auto;">
+            Human-Centered Privacy-First AI Reasoning Engine & Desktop OS. Designed for autonomous reasoning, offline RAG context indexing, and expert cognitive skills.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 16px; font-size: 0.85rem; color: #cbd5e1;">
+            <span><b>Version:</b> <code>v{meta['version']}</code></span>
+            <span><b>Stage:</b> <code>{meta['stage']}</code></span>
+            <span><b>License:</b> <code>MIT / Open-Source</code></span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
