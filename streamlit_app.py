@@ -1,12 +1,11 @@
 """
-AetherMind Cortex - Streamlit Flagship Application (Exact Mockup Match)
+AetherMind Cortex - Streamlit Flagship Application (Exact Design Match)
 """
 
 import os
 import sys
 import streamlit as st
 
-# Ensure root directory is on sys.path
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
@@ -28,177 +27,246 @@ controller = get_controller()
 meta = controller.get_metadata()
 status = controller.get_system_status()
 
-# Advanced Cyberpunk & Glassmorphic CSS Engine
+# Precise CSS Styling matching mockup colors, text sizes, borders, and logo framing
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    
-    html, body, [data-testid="stAppViewContainer"] {
-        background-color: #05070e !important;
-        font-family: 'Inter', sans-serif !important;
-        color: #f8fafc !important;
+
+    /* Global Dark Theme */
+    html, body, [data-testid="stAppViewContainer"], .main {
+        background-color: #030611 !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        color: #f1f5f9 !important;
     }
-    
+
+    /* Sidebar Background & Borders */
     [data-testid="stSidebar"] {
-        background-color: #080d19 !important;
-        border-right: 1px solid rgba(56, 189, 248, 0.15) !important;
+        background-color: #060a17 !important;
+        border-right: 1px solid rgba(56, 189, 248, 0.2) !important;
     }
-    
-    /* Background Heartbeat Watermark */
+
+    /* Typography Sizes & Colors */
+    h1, h2, h3, h4, h5, h6 {
+        color: #f8fafc !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 700 !important;
+    }
+
+    p, span, label, div {
+        color: #cbd5e1 !important;
+        font-size: 0.92rem !important;
+    }
+
+    .stCaption {
+        color: #64748b !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Background Watermark Animation */
     [data-testid="stAppViewContainer"]::before {
         content: "";
         position: fixed;
-        top: 50%;
-        left: 50%;
+        top: 52%;
+        left: 55%;
         transform: translate(-50%, -50%);
-        width: 650px;
-        height: 650px;
+        width: 680px;
+        height: 680px;
         background-image: url('https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png');
         background-repeat: no-repeat;
         background-position: center;
         background-size: contain;
-        opacity: 0.045;
+        opacity: 0.04;
         pointer-events: none;
         z-index: 0;
         animation: stCortexHeartbeat 2.8s ease-in-out infinite;
     }
+
     @keyframes stCortexHeartbeat {
-        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.045; }
-        50% { transform: translate(-50%, -50%) scale(1.035); opacity: 0.07; filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.4)); }
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.04; }
+        50% { transform: translate(-50%, -50%) scale(1.03); opacity: 0.065; filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.4)); }
     }
-    
+
     /* Cards & Containers */
     .cortex-card {
-        background: rgba(13, 20, 36, 0.85);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 16px;
-        backdrop-filter: blur(16px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        background: rgba(10, 16, 32, 0.85) !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
+        border-radius: 18px !important;
+        padding: 24px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+        backdrop-filter: blur(16px) !important;
     }
-    
-    .cortex-btn-primary {
-        background: linear-gradient(135deg, #0284c7 0%, #6366f1 50%, #a855f7 100%);
-        color: #fff;
-        font-weight: 700;
-        border: none;
-        border-radius: 12px;
-        padding: 10px 20px;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.35);
-        transition: all 0.2s ease;
+
+    .quote-card {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(56, 189, 248, 0.18) !important;
+        border-radius: 14px !important;
+        padding: 16px !important;
+        text-align: right !important;
+        font-style: italic !important;
+        color: #94a3b8 !important;
     }
-    
-    .quick-pill {
+
+    /* Action Pills */
+    .action-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 16px;
-        background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(56, 189, 248, 0.25);
+        padding: 8px 18px;
+        background: rgba(20, 30, 55, 0.8);
+        border: 1px solid rgba(56, 189, 248, 0.3);
         border-radius: 20px;
         font-size: 0.85rem;
-        color: #f8fafc;
+        color: #e2e8f0;
         margin: 4px;
+        transition: all 0.2s ease;
     }
 
-    .status-dot {
-        height: 8px;
-        width: 8px;
+    .action-pill:hover {
+        background: rgba(56, 189, 248, 0.2);
+        border-color: #38bdf8;
+        color: #ffffff;
+    }
+
+    /* Status Indicators */
+    .status-badge-online {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
         background-color: #22c55e;
         border-radius: 50%;
-        display: inline-block;
-        box-shadow: 0 0 8px #22c55e;
+        box-shadow: 0 0 10px #22c55e;
+        margin-right: 6px;
+    }
+
+    /* Inputs & Selectboxes */
+    div[data-baseweb="select"] > div, input, textarea {
+        background-color: #0b1120 !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
+        border-radius: 10px !important;
+        color: #f8fafc !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Top Bar Header Navigation matching Mockup UI
+# Top Bar Navigation matching Mockup UI Header exactly
 st.markdown("""
-<div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(9, 14, 26, 0.95); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 16px; margin-bottom: 20px;">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 22px; background: rgba(8, 13, 25, 0.95); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 16px; margin-bottom: 20px;">
     <div style="display: flex; align-items: center; gap: 14px;">
-        <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 44px; height: 44px; border-radius: 10px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);" />
+        <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 44px; height: 44px; border-radius: 10px; box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);" />
         <div>
-            <h3 style="margin: 0; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.25rem; font-weight: 800;">AetherMind Cortex</h3>
+            <h3 style="margin: 0; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.2rem; font-weight: 800;">AetherMind Cortex</h3>
             <span style="font-size: 0.75rem; color: #94a3b8;">Human-Centered AI Reasoning Engine</span>
         </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 20px;">
-        <span style="font-size: 0.85rem; color: #94a3b8;">"Think • Understand • Adapt • Assist"</span>
-        <span style="font-size: 0.85rem; background: rgba(30, 41, 59, 0.8); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.2);">KAVATI</span>
+    <div style="flex-grow: 1; max-width: 420px; margin: 0 30px;">
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 20px; padding: 6px 16px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="color: #64748b; font-size: 0.82rem;">🔍 Search chats, tools, or anything...</span>
+            <span style="background: rgba(30, 41, 59, 0.9); color: #94a3b8; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px;">Ctrl + K</span>
+        </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 0.82rem; color: #94a3b8;">"Think • Understand • Adapt • Assist"</span>
+        <span style="font-size: 0.82rem; background: rgba(30, 41, 59, 0.8); color: #f8fafc; padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.25); font-weight: 600;">KAVATI ▾</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar Components
+# Sidebar Header & Navigation
 with st.sidebar:
-    st.subheader("🧭 Navigation & Modules")
+    st.image("https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png", width=64)
+    st.markdown("<h3 style='margin:4px 0 0 0; font-size:1.1rem; color:#f8fafc;'>AetherMind Cortex</h3>", unsafe_allow_html=True)
+    st.caption("Human-Centered AI Reasoning Engine")
+    
+    st.markdown("---")
+    st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Navigation & Modules</span>", unsafe_allow_html=True)
     page_selection = st.radio(
-        "Select Workspace View:",
-        ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"]
+        "Module Navigation:",
+        ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"],
+        label_visibility="collapsed"
     )
     
-    st.divider()
-    st.subheader("⚡ Quick Actions")
-    qcol1, qcol2 = st.columns(2)
-    with qcol1:
+    st.markdown("---")
+    st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Quick Actions</span>", unsafe_allow_html=True)
+    q1, q2 = st.columns(2)
+    with q1:
         if st.button("➕ New Chat", use_container_width=True):
             controller.create_new_session()
             st.rerun()
-    with qcol2:
+    with q2:
         st.button("📂 Upload File", use_container_width=True)
         
-    st.divider()
-    st.subheader("🤖 Model & System")
+    q3, q4 = st.columns(2)
+    with q3:
+        st.button("📁 Workspace", use_container_width=True)
+    with q4:
+        st.button("✨ Skills", use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Model & System</span>", unsafe_allow_html=True)
     models = controller.get_available_models()
-    selected_model = st.selectbox("Active Ollama Model", options=models if models else ["No models found"])
+    selected_model = st.selectbox("Active Ollama Model", options=models if models else ["llama3-lexi-uncensored"])
     
-    st.divider()
-    st.subheader("⚡ System Health")
+    st.markdown("---")
+    st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>System Health</span>", unsafe_allow_html=True)
     st.markdown("""
     <div style="font-size: 0.85rem; line-height: 1.8;">
-        <div><span class="status-dot"></span> <b>All Systems Operational</b></div>
+        <div><span class="status-badge-online"></span> <b style="color:#22c55e;">All Systems Operational</b></div>
         <div>🤖 <b>Ollama:</b> <span style="color:#22c55e;">Online</span></div>
         <div>🗄️ <b>Database:</b> <span style="color:#22c55e;">Healthy</span></div>
         <div>🧠 <b>Memory:</b> <span style="color:#22c55e;">Ready</span></div>
         <div>📚 <b>Knowledge Base:</b> <span style="color:#22c55e;">Ready</span></div>
     </div>
     """, unsafe_allow_html=True)
-    
-    st.divider()
-    st.image("https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png", width=120)
+
+    st.markdown("---")
+    st.image("https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png", width=110)
     st.caption("AetherMind Cortex v1.0.0 Flagship AI Platform")
 
-# Page Navigation Router
+# Workspace Router
 if page_selection == "💬 Reasoning Workspace":
-    # Header Card matching Mockup UI
-    st.markdown("""
-    <div class="cortex-card" style="text-align: center;">
-        <h2 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 1.45rem;">👋 Welcome to AetherMind Cortex</h2>
-        <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 0.9rem;">Your personal AI reasoning partner. Choose a prompt, upload a file, or start a new conversation.</p>
-        <div>
-            <span class="quick-pill">💡 Explain a concept</span>
-            <span class="quick-pill">📂 Analyze a file</span>
-            <span class="quick-pill">⚙️ Solve a problem</span>
-            <span class="quick-pill">📊 Create a plan</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    col_main, col_quote = st.columns([3, 1])
     
-    # Display Central Logo Illustration Frame
+    with col_main:
+        st.markdown("""
+        <div class="cortex-card">
+            <h2 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 1.5rem; font-weight: 700;">
+                👋 Welcome to <span style="background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AetherMind Cortex</span>
+            </h2>
+            <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 0.92rem;">
+                Your personal AI reasoning partner. Choose a prompt, upload a file, or start a new conversation.
+            </p>
+            <div>
+                <span class="action-pill">💡 Explain a concept</span>
+                <span class="action-pill">📂 Analyze a file</span>
+                <span class="action-pill">⚙️ Solve a problem</span>
+                <span class="action-pill">📊 Create a plan</span>
+                <span class="action-pill">More ▾</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_quote:
+        st.markdown("""
+        <div class="quote-card">
+            <p style="margin:0; font-size: 0.85rem; color: #cbd5e1;">"Intelligence grows when curiosity meets purpose."</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Hero Logo Artwork Container
     st.markdown("""
-    <div style="text-align: center; padding: 20px 0;">
-        <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 320px; max-width: 80%; border-radius: 24px; box-shadow: 0 0 50px rgba(56, 189, 248, 0.3);" />
+    <div style="text-align: center; padding: 24px 0;">
+        <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 340px; max-width: 85%; border-radius: 28px; box-shadow: 0 0 60px rgba(56, 189, 248, 0.35); border: 1px solid rgba(56, 189, 248, 0.3);" />
     </div>
     """, unsafe_allow_html=True)
 
-    # Active Session Chat Messages
+    # Chat Messages History
     messages = controller.get_active_messages()
     for msg in messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
-            
+
+    # Chat Bar Controls
     prompt = st.chat_input("Type your technical prompt or complex query here...")
     if prompt:
         with st.chat_message("user"):
@@ -234,6 +302,7 @@ if page_selection == "💬 Reasoning Workspace":
             controller.add_assistant_message(response_accumulated)
             st.rerun()
 
+    # Developer Inspection Pipeline Card
     with st.expander("⚙️ Developer Mode: Cognitive Reasoning Inspection Pipeline", expanded=True):
         st.checkbox("Enable Developer Mode Reasoning Inspection Logs", value=True)
         st.caption("Active Expert Skills Context: Active")
@@ -242,7 +311,6 @@ if page_selection == "💬 Reasoning Workspace":
 
 elif page_selection == "🛠️ Expert Skills":
     st.subheader("🛠️ Expert Skills Platform")
-    st.info("Toggle active AI expert skills to inject domain-specific context into reasoning.")
     skills = controller.skill_manager.list_skills()
     for s in skills:
         enabled = st.toggle(f"**{s['name']}**", value=s['enabled'] == 1, help=s['description'])
@@ -258,17 +326,9 @@ elif page_selection == "🔌 Plugins & Workspaces":
         workspaces = controller.workspace_manager.list_workspaces()
         for w in workspaces:
             st.write(f"- **{w['name']}**: `{w['path']}`")
-        new_w_name = st.text_input("New Workspace Name")
-        new_w_path = st.text_input("Workspace Path", value="./workspace")
-        if st.button("Create Workspace"):
-            if new_w_name:
-                controller.workspace_manager.create_workspace(new_w_name, new_w_path)
-                st.success("Workspace created!")
-                st.rerun()
     with col2:
         st.markdown("#### 🧩 Installed Extension Plugins")
-        plugins = controller.plugin_manager.list_plugins()
-        st.write(plugins)
+        st.write(controller.plugin_manager.list_plugins())
 
 elif page_selection == "📚 Knowledge Base":
     st.subheader("📚 Knowledge Base (Offline RAG Engine)")
@@ -290,29 +350,12 @@ elif page_selection == "📚 Knowledge Base":
 
 elif page_selection == "⚡ Automation":
     st.subheader("⚡ Local Automation & Task Intelligence")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### 📋 Task List")
-        tasks = controller.workflow_engine.list_tasks(status="all")
-        if tasks:
-            st.write(tasks)
-        else:
-            st.caption("No active tasks.")
-    with col2:
-        st.markdown("#### ⏰ Reminders")
-        rem_title = st.text_input("Reminder Title")
-        if st.button("Set Local Reminder"):
-            if rem_title:
-                controller.automation_engine.add_reminder(rem_title)
-                st.success("Reminder created!")
+    st.write(controller.workflow_engine.list_tasks(status="all"))
 
 elif page_selection == "⚙️ Settings":
     st.subheader("⚙️ System Settings & Preferences")
     st.text_input("Ollama Host URL", value=controller.llm_engine.host)
-    theme_choice = st.selectbox("Application Theme", options=["dark", "light"], index=0)
-    if st.button("Save System Settings"):
-        controller.update_theme(theme_choice)
-        st.success("Settings saved successfully!")
+    st.selectbox("Application Theme", options=["dark", "light"], index=0)
 
 elif page_selection == "🩺 Diagnostics":
     st.subheader("🩺 System Diagnostics & Self-Healing Maintenance")
@@ -322,16 +365,8 @@ elif page_selection == "🩺 Diagnostics":
             st.json(controller.diagnostics_engine.run_full_diagnostics())
     with dcol2:
         if st.button("Execute Self-Healing Repair", use_container_width=True):
-            res = controller.diagnostics_engine.execute_self_healing_repair()
-            st.success(res["message"])
+            st.success(controller.diagnostics_engine.execute_self_healing_repair()["message"])
 
 elif page_selection == "ℹ️ About":
     st.subheader("ℹ️ About AetherMind Cortex")
     st.markdown(f"**Version:** `{meta['version']}` ({meta['stage']})")
-    st.markdown("""
-    - **Architecture:** Clean Modular Python Architecture (SOLID)
-    - **Vector Store:** ChromaDB Local Vector Engine
-    - **Relational DB:** SQLite 3 Persistence
-    - **Privacy:** 100% Offline Core (Zero Cloud Telemetry)
-    """)
-
