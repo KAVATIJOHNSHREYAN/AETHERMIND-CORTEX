@@ -1,10 +1,11 @@
 """
-AetherMind Cortex Offline Knowledge Engine
-Manages document vector database (ChromaDB), hybrid search, and RAG context injection.
+AetherMind Cortex Offline Knowledge Engine (Phase 4.2 Expanded)
+Manages document vector database (ChromaDB), multi-threaded batch indexing, collection statistics, index rebuilding, and confidence scoring.
 """
 
 import os
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any, Optional, Tuple
 import chromadb
 from database.connection import DBConnection
@@ -29,7 +30,7 @@ class KnowledgeEngine:
             name="aethermind_knowledge",
             metadata={"description": "AetherMind Offline Document RAG Collection"}
         )
-        logger.info("KnowledgeEngine initialized with local ChromaDB Vector Store.")
+        logger.info("KnowledgeEngine Phase 4.2 initialized with local ChromaDB Vector Store.")
 
     def ingest_file(self, file_path: str) -> Dict[str, Any]:
         """
@@ -47,7 +48,6 @@ class KnowledgeEngine:
             cursor.execute("SELECT id, chunk_count FROM indexed_documents WHERE file_hash = ?", (file_hash,))
             existing = cursor.fetchone()
             if existing:
-                logger.info(f"Document already indexed (Hash match): {file_name}")
                 return {
                     "success": True,
                     "message": f"Document '{file_name}' already indexed.",
@@ -104,6 +104,78 @@ class KnowledgeEngine:
             "duplicate": False
         }
 
+    def batch_ingest_directory(self, dir_path: str, max_workers: int = 4) -> Dict[str, Any]:
+        """Concurrently indexes all files inside a folder using ThreadPoolExecutor."""
+        files = DocumentProcessor.scan_directory(dir_path)
+        if not files:
+            return {"success": False, "message": f"No supported files found in directory: '{dir_path}'."}
+
+        results = []
+        indexed_count = 0
+        duplicate_count = 0
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_file = {executor.submit(self.ingest_file, f): f for f in files}
+            for future in as_completed(future_to_file):
+                res = future.result()
+                results.append(res)
+                if res["success"]:
+                    if res.get("duplicate"):
+                        duplicate_count += 1
+                    else:
+                        indexed_count += 1
+
+        return {
+            "success": True,
+            "message": f"Batch folder indexing completed: {indexed_count} new files indexed, {duplicate_count} skipped duplicates.",
+            "total_files": len(files),
+            "new_indexed": indexed_count,
+            "duplicates": duplicate_count
+        }
+
+    def get_collection_stats(self) -> Dict[str, Any]:
+        """Calculates collection metadata statistics."""
+        docs = self.list_indexed_documents()
+        total_chunks = self.collection.count()
+        file_types = {}
+        for d in docs:
+            ft = d["file_type"].upper()
+            file_types[ft] = file_types.get(ft, 0) + 1
+
+        return {
+            "total_documents": len(docs),
+            "total_chunks": total_chunks,
+            "file_types": file_types,
+            "status": "Healthy"
+        }
+
+    def rebuild_index(self) -> bool:
+        """Clears vector collection and re-indexes all stored SQLite document records."""
+        try:
+            docs = self.list_indexed_documents()
+            file_paths = [d["file_path"] for d in docs if os.path.exists(d["file_path"])]
+
+            # Clear DB records and ChromaDB collection
+            with self.db_conn.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM indexed_documents;")
+            
+            self.chroma_client.delete_collection("aethermind_knowledge")
+            self.collection = self.chroma_client.get_or_create_collection(
+                name="aethermind_knowledge",
+                metadata={"description": "AetherMind Offline Document RAG Collection"}
+            )
+
+            # Re-ingest files
+            for fp in file_paths:
+                self.ingest_file(fp)
+
+            logger.info(f"Rebuilt index for {len(file_paths)} files successfully.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to rebuild vector index: {e}")
+            return False
+
     def list_indexed_documents(self) -> List[Dict[str, Any]]:
         """Lists all currently indexed documents."""
         try:
@@ -119,12 +191,10 @@ class KnowledgeEngine:
     def remove_document(self, doc_id: str) -> bool:
         """Removes a document from SQLite index and deletes its chunks from ChromaDB."""
         try:
-            # 1. Remove from SQLite
             with self.db_conn.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM indexed_documents WHERE id = ?", (doc_id,))
 
-            # 2. Remove chunks from ChromaDB matching doc_id
             self.collection.delete(where={"doc_id": doc_id})
             logger.info(f"Removed indexed document [{doc_id}].")
             return True
@@ -132,9 +202,10 @@ class KnowledgeEngine:
             logger.error(f"Failed to remove indexed document [{doc_id}]: {e}")
             return False
 
-    def search_rag_chunks(self, query: str, limit: int = 3) -> List[Dict[str, Any]]:
+    def search_rag_chunks(self, query: str, limit: int = 4) -> List[Dict[str, Any]]:
         """
         Performs hybrid semantic retrieval across indexed document chunks matching query.
+        Calculates confidence percentage score.
         """
         if not query.strip() or self.collection.count() == 0:
             return []
@@ -148,15 +219,19 @@ class KnowledgeEngine:
             ids = results.get("ids", [[]])[0]
             docs = results.get("documents", [[]])[0]
             metas = results.get("metadatas", [[]])[0]
-            distances = results.get("distances", [[]])[0] if "distances" in results else [0.0] * len(ids)
+            distances = results.get("distances", [[]])[0] if "distances" in results else [0.5] * len(ids)
 
             retrieved = []
             for i in range(len(ids)):
+                dist = distances[i] if i < len(distances) else 0.5
+                confidence = max(5.0, min(99.9, round((1.0 - dist) * 100, 1)))
+                
                 retrieved.append({
                     "id": ids[i],
                     "content": docs[i],
                     "metadata": metas[i],
-                    "distance": distances[i] if i < len(distances) else 0.0
+                    "distance": dist,
+                    "confidence_score": confidence
                 })
             return retrieved
         except Exception as e:
@@ -177,10 +252,12 @@ class KnowledgeEngine:
         for idx, chunk in enumerate(chunks, 1):
             meta = chunk["metadata"]
             source_file = meta.get("file_name", "Unknown File")
-            context_str += f"[{idx}] Source: {source_file} (Chunk {meta.get('chunk_index', 0)})\nContent: {chunk['content']}\n\n"
+            confidence = chunk.get("confidence_score", 85.0)
+            context_str += f"[{idx}] Source: {source_file} (Chunk {meta.get('chunk_index', 0)}, Confidence: {confidence}%)\nContent: {chunk['content']}\n\n"
             citations.append({
                 "source": source_file,
                 "chunk_index": meta.get("chunk_index", 0),
+                "confidence": confidence,
                 "content_snippet": chunk['content'][:120] + "..."
             })
 

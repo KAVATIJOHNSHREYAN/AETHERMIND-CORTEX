@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Document Processor
-Parses PDF, DOCX, TXT, Markdown, and source code files, chunking text for RAG indexing.
+AetherMind Cortex Document Processor (Phase 4.2 Expanded)
+Parses PDF, DOCX, TXT, Markdown, and source code files. Includes folder scanner & intelligent sentence chunker.
 """
 
 import os
@@ -10,8 +10,10 @@ from core.logger import get_logger
 
 logger = get_logger("DocumentProcessor")
 
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md", ".py", ".js", ".json", ".sql", ".html", ".css", ".yaml", ".yml"}
+
 class DocumentProcessor:
-    """Document Ingestion Engine handling text extraction and chunking."""
+    """Document Ingestion Engine handling multi-format extraction, folder scanning, and text chunking."""
 
     def __init__(self, chunk_size: int = 500, chunk_overlap: int = 100):
         self.chunk_size = chunk_size
@@ -25,6 +27,21 @@ class DocumentProcessor:
             while chunk := f.read(8192):
                 hasher.update(chunk)
         return hasher.hexdigest()
+
+    @staticmethod
+    def scan_directory(dir_path: str) -> List[str]:
+        """Recursively scans directory for supported document & code files."""
+        if not os.path.exists(dir_path) or not os.path.isdir(dir_path):
+            return []
+
+        found_files = []
+        for root, _, files in os.walk(dir_path):
+            for file in files:
+                ext = os.path.splitext(file)[1].lower()
+                if ext in SUPPORTED_EXTENSIONS:
+                    found_files.append(os.path.join(root, file))
+        logger.info(f"Directory scanner located {len(found_files)} supported files in '{dir_path}'.")
+        return found_files
 
     def extract_text(self, file_path: str) -> Tuple[str, str]:
         """
@@ -53,7 +70,6 @@ class DocumentProcessor:
             file_type = "docx"
 
         else:
-            # TXT, Markdown, Python, JS, SQL, JSON, etc.
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 extracted_text = f.read()
             file_type = ext.lstrip(".") or "text"

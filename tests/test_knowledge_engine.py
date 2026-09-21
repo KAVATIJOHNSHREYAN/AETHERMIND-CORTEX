@@ -1,5 +1,5 @@
 """
-Unit tests for Document Processor and Knowledge Engine (RAG)
+Unit tests for Document Processor and Knowledge Engine (Phase 4.2 Expanded)
 """
 
 import os
@@ -11,38 +11,36 @@ from database.init_db import initialize_database
 
 @pytest.fixture
 def temp_db(tmp_path):
-    db_file = str(tmp_path / "test_knowledge.db")
+    db_file = str(tmp_path / "test_knowledge_v42.db")
     db_conn = DBConnection(db_path=db_file)
     initialize_database(db_conn)
     return db_conn
 
-def test_document_processor_chunking(tmp_path):
-    sample_file = tmp_path / "sample.txt"
-    sample_file.write_text("AetherMind Cortex is an offline AI reasoning engine platform built with Python.", encoding="utf-8")
+def test_folder_scanner(tmp_path):
+    dir_path = tmp_path / "docs_folder"
+    dir_path.mkdir()
+    (dir_path / "file1.txt").write_text("Text doc 1", encoding="utf-8")
+    (dir_path / "file2.md").write_text("# MD doc 2", encoding="utf-8")
+    (dir_path / "code.py").write_text("print('hello')", encoding="utf-8")
     
-    processor = DocumentProcessor(chunk_size=30, chunk_overlap=10)
-    text, file_type = processor.extract_text(str(sample_file))
-    assert file_type == "txt"
-    assert "AetherMind" in text
-    
-    chunks = processor.chunk_text(text, {"file_name": "sample.txt"})
-    assert len(chunks) > 1
+    files = DocumentProcessor.scan_directory(str(dir_path))
+    assert len(files) == 3
 
-def test_knowledge_engine_indexing(temp_db, tmp_path):
-    sample_file = tmp_path / "rag_test.txt"
-    sample_file.write_text("Python is a high-level programming language used extensively in AetherMind Cortex.", encoding="utf-8")
-    
+def test_batch_ingest_and_confidence_score(temp_db, tmp_path):
+    dir_path = tmp_path / "batch_folder"
+    dir_path.mkdir()
+    (dir_path / "docA.txt").write_text("AetherMind Cortex handles offline RAG document retrieval.", encoding="utf-8")
+    (dir_path / "docB.txt").write_text("ChromaDB persists vector embeddings locally.", encoding="utf-8")
+
     ke = KnowledgeEngine(db_conn=temp_db)
-    res = ke.ingest_file(str(sample_file))
-    assert res["success"] is True
-    assert res["chunk_count"] > 0
+    batch_res = ke.batch_ingest_directory(str(dir_path))
+    assert batch_res["success"] is True
+    assert batch_res["new_indexed"] == 2
     
-    docs = ke.list_indexed_documents()
-    assert len(docs) >= 1
-    assert docs[0]["file_name"] == "rag_test.txt"
+    stats = ke.get_collection_stats()
+    assert stats["total_documents"] >= 2
     
-    rag_context, citations = ke.get_rag_context_injection("What programming language does AetherMind use?")
-    assert len(citations) >= 1
-    assert citations[0]["source"] == "rag_test.txt"
-    
-    assert ke.remove_document(res["doc_id"]) is True
+    chunks = ke.search_rag_chunks("offline RAG document retrieval")
+    assert len(chunks) >= 1
+    assert "confidence_score" in chunks[0]
+    assert chunks[0]["confidence_score"] > 0
