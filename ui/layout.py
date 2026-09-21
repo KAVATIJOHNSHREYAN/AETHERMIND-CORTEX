@@ -1,6 +1,6 @@
 """
-AetherMind Cortex UI Layout Assembly (Phase 3 Expanded)
-Assembles sidebar, streaming chat, long-term memory dashboard, settings, about, and status bar.
+AetherMind Cortex UI Layout Assembly (Phase 4 Expanded)
+Assembles sidebar, streaming chat, long-term memory dashboard, knowledge engine, settings, about, and status bar.
 """
 
 import gradio as gr
@@ -9,22 +9,23 @@ from ui.theme import get_theme, CUSTOM_CSS
 from ui.components.sidebar import render_sidebar
 from ui.components.chat import render_chat_tab
 from ui.components.memory_tab import render_memory_tab
+from ui.components.knowledge_tab import render_knowledge_tab
 from ui.components.settings_tab import render_settings_tab
 from ui.components.about_tab import render_about_tab
 from ui.components.status_bar import render_status_bar
 
 def build_ui(controller: AppController) -> gr.Blocks:
-    """Assembles and returns the Gradio UI Blocks interface for Phase 3."""
+    """Assembles and returns the Gradio UI Blocks interface for Phase 4."""
     current_theme_name = controller.settings_manager.get_setting("app.theme", "dark")
     theme = get_theme(current_theme_name)
     
     with gr.Blocks(
         theme=theme,
         css=CUSTOM_CSS,
-        title="AetherMind Cortex - Offline AI Engine with Memory"
+        title="AetherMind Cortex - Offline AI Engine with RAG & Memory"
     ) as demo:
         with gr.Row(elem_classes=["aether-header"]):
-            gr.Markdown("# 🧠 AetherMind Cortex (Offline AI + Memory Engine)")
+            gr.Markdown("# 🧠 AetherMind Cortex (Offline AI + RAG + Memory Engine)")
             
         with gr.Row():
             # Left Sidebar Navigation & Controls
@@ -35,6 +36,7 @@ def build_ui(controller: AppController) -> gr.Blocks:
                 with gr.Tabs():
                     chatbot, load_active_history = render_chat_tab(controller, model_dropdown)
                     render_memory_tab(controller)
+                    render_knowledge_tab(controller)
                     render_settings_tab(controller)
                     render_about_tab(controller)
                     

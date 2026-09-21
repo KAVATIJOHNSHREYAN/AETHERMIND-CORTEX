@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI (Phase 3 Expanded)
+About Page Component for AetherMind Cortex UI (Phase 4 Expanded)
 """
 
 import gradio as gr
@@ -23,10 +23,11 @@ def render_about_tab(controller: AppController):
             """)
             
         gr.Markdown("""
-        ### Phase 3 Privacy & Memory Milestones
-        - ✅ Privacy-First Long-Term Memory Engine (User, Project, Conversation memories)
-        - ✅ ChromaDB Semantic Vector Embedding & Retrieval (`database/memory_vector/`)
-        - ✅ Interactive Memory Dashboard UI (Add, Search, Pin, Archive)
-        - ✅ Dynamic Memory Prompt Context Injection into Ollama local LLM stream
+        ### Phase 4 Offline Knowledge RAG Milestones
+        - ✅ PDF, DOCX, TXT, Markdown, and Code Document Ingestion & Text Chunking
+        - ✅ ChromaDB Knowledge Vector Database (`database/knowledge_vector/`)
+        - ✅ Hybrid Semantic Retrieval & RAG Context Prompt Injection
+        - ✅ Source Document Citations with Chunk Snippets in Chat UI
+        - ✅ Interactive Knowledge Dashboard UI (Upload, Index, Query)
         - ✅ 100% Offline Architecture - Zero external API/cloud dependency
         """)

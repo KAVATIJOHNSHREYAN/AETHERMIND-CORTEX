@@ -1,5 +1,5 @@
 """
-Sidebar Component for AetherMind Cortex UI (Phase 2)
+Sidebar Component for AetherMind Cortex UI (Phase 4 Expanded)
 Provides Ollama Model Selector, Session History, and System Controls.
 """
 
@@ -53,7 +53,8 @@ def render_sidebar(controller: AppController):
             ollama_icon = "🟢" if status["ollama_online"] else "🔴"
             return (
                 f"{db_icon} **DB:** {'Healthy' if status['db_healthy'] else 'Error'}\n\n"
-                f"{ollama_icon} **Ollama:** {'Online' if status['ollama_online'] else 'Offline'} ({status['ollama_models']} models)"
+                f"{ollama_icon} **Ollama:** {'Online' if status['ollama_online'] else 'Offline'} ({status['ollama_models']} models)\n\n"
+                f"🧠 **Memories:** {status['memory_count']} | 📚 **Docs:** {status['doc_count']}"
             )
 
         status_md.value = refresh_status()

@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Database Schema (Phase 3 Expanded)
-Includes app_settings, sessions, messages, logs_audit, and memories.
+AetherMind Cortex Database Schema (Phase 4 Expanded)
+Includes app_settings, sessions, messages, memories, indexed_documents, and logs_audit.
 """
 
 from database.connection import DBConnection
@@ -51,6 +51,17 @@ CREATE TABLE IF NOT EXISTS memories (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Indexed Documents for Knowledge RAG Engine
+CREATE TABLE IF NOT EXISTS indexed_documents (
+    id TEXT PRIMARY KEY,
+    file_name TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    file_hash TEXT NOT NULL,
+    file_type TEXT NOT NULL,
+    chunk_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Audit Log Table
 CREATE TABLE IF NOT EXISTS logs_audit (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,7 +81,7 @@ def initialize_database(db_connection: DBConnection = None) -> bool:
         with connection.get_connection() as conn:
             cursor = conn.cursor()
             cursor.executescript(SCHEMA_SQL)
-            logger.info("Database schema initialized successfully (Phase 3 schema active).")
+            logger.info("Database schema initialized successfully (Phase 4 schema active).")
             return True
     except Exception as e:
         logger.error(f"Failed to initialize database schema: {e}")

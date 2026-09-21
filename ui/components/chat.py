@@ -1,6 +1,6 @@
 """
-Chat Component for AetherMind Cortex UI (Phase 3 Expanded)
-Includes long-term memory context injection into Ollama prompts.
+Chat Component for AetherMind Cortex UI (Phase 4 Expanded)
+Includes long-term memory context injection and RAG document context with source citations.
 """
 
 import gradio as gr
@@ -8,13 +8,13 @@ from typing import List, Tuple
 from app.controller import AppController
 
 def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
-    """Renders the real-time streaming chat tab with memory context awareness."""
+    """Renders the real-time streaming chat tab with RAG & memory context awareness."""
     with gr.Tab("💬 Reasoning Chat"):
         gr.Markdown("### 🤖 Local Ollama AI Reasoning Workspace")
         
         chatbot = gr.Chatbot(
             value=[],
-            height=520,
+            height=500,
             show_copy_button=True,
             render_markdown=True,
             avatar_images=None
@@ -39,9 +39,9 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
 
         export_file = gr.File(label="Download Chat Export", visible=False)
 
-        # Performance & Memory Context Accordion
-        with gr.Accordion("🧠 Active Long-Term Memory Context & Metrics", open=True):
-            memory_context_md = gr.Markdown("*No memory context retrieved yet.*")
+        # RAG Source Citations & Performance Accordion
+        with gr.Accordion("📚 RAG Source Citations & Memory Context", open=True):
+            rag_citations_md = gr.Markdown("*No RAG citations or document context retrieved.*")
             metrics_md = gr.Markdown("⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens")
 
         def load_active_history():
@@ -67,17 +67,31 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
                 yield history, "", "*No prompt entered.*", "⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens"
                 return
 
-            # Append user message to controller DB
             controller.add_user_message(user_message)
-            history.append((user_message, "... 🤔 Thinking & Recalling Memories ..."))
+            history.append((user_message, "... 🤔 Thinking, Recalling Memories & Searching Knowledge Base ..."))
 
-            # Retrieve Memory Context
+            # 1. Memory Context
             memory_context = controller.memory_manager.get_context_prompt_injection(user_message)
-            mem_display = memory_context if memory_context else "*No relevant memories retrieved.*"
+            
+            # 2. RAG Knowledge Context & Citations
+            rag_context, citations = controller.knowledge_engine.get_rag_context_injection(user_message)
 
-            yield history, "", mem_display, "⚡ **Generating streaming response...**"
+            cit_display = ""
+            if citations:
+                cit_display += "#### 📄 Retrived RAG Document Citations:\n"
+                for idx, c in enumerate(citations, 1):
+                    cit_display += f"**[{idx}] {c['source']}** (Chunk {c['chunk_index']}): `{c['content_snippet']}`\n\n"
+            else:
+                cit_display = "*No document citations retrieved for this prompt.*"
 
-            # Prepare message payload for Ollama
+            combined_system_prompt = "You are AetherMind Cortex, a privacy-first AI engine."
+            if memory_context:
+                combined_system_prompt += "\n" + memory_context
+            if rag_context:
+                combined_system_prompt += "\n" + rag_context
+
+            yield history, "", cit_display, "⚡ **Generating streaming response...**"
+
             formatted_messages = []
             for u, a in history[:-1]:
                 if u:
@@ -86,14 +100,13 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
                     formatted_messages.append({"role": "assistant", "content": a})
             formatted_messages.append({"role": "user", "content": user_message})
 
-            # Stream from Ollama Engine with injected system prompt memory context
             assistant_accumulated = ""
             final_metrics = ""
 
             for chunk in controller.llm_engine.stream_chat(
                 model=model_name,
                 messages=formatted_messages,
-                system_prompt=f"You are AetherMind Cortex, a human-centered AI engine. {memory_context}" if memory_context else None
+                system_prompt=combined_system_prompt
             ):
                 assistant_accumulated = chunk["accumulated"]
                 history[-1] = (user_message, assistant_accumulated)
@@ -101,13 +114,11 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
                 m = chunk["metrics"]
                 final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
                 
-                yield history, "", mem_display, final_metrics
+                yield history, "", cit_display, final_metrics
 
-            # Save completed assistant response to DB
             controller.add_assistant_message(assistant_accumulated)
-            yield history, "", mem_display, final_metrics
+            yield history, "", cit_display, final_metrics
 
-        # Event stream generator for regenerate action
         def regenerate_submit(history: List[Tuple[str, str]], model_name: str):
             if not history:
                 yield history, "*No prompt.*", "⚡ No messages to regenerate."
@@ -120,9 +131,23 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
 
             history[-1] = (last_user_msg, "... 🔄 Regenerating ...")
             memory_context = controller.memory_manager.get_context_prompt_injection(last_user_msg)
-            mem_display = memory_context if memory_context else "*No relevant memories retrieved.*"
+            rag_context, citations = controller.knowledge_engine.get_rag_context_injection(last_user_msg)
 
-            yield history, mem_display, "⚡ **Regenerating streaming response...**"
+            cit_display = ""
+            if citations:
+                cit_display += "#### 📄 Retrived RAG Document Citations:\n"
+                for idx, c in enumerate(citations, 1):
+                    cit_display += f"**[{idx}] {c['source']}** (Chunk {c['chunk_index']}): `{c['content_snippet']}`\n\n"
+            else:
+                cit_display = "*No document citations retrieved for this prompt.*"
+
+            combined_system_prompt = "You are AetherMind Cortex, a privacy-first AI engine."
+            if memory_context:
+                combined_system_prompt += "\n" + memory_context
+            if rag_context:
+                combined_system_prompt += "\n" + rag_context
+
+            yield history, cit_display, "⚡ **Regenerating streaming response...**"
 
             formatted_messages = []
             for u, a in history[:-1]:
@@ -138,7 +163,7 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
             for chunk in controller.llm_engine.stream_chat(
                 model=model_name,
                 messages=formatted_messages,
-                system_prompt=f"You are AetherMind Cortex, a human-centered AI engine. {memory_context}" if memory_context else None
+                system_prompt=combined_system_prompt
             ):
                 assistant_accumulated = chunk["accumulated"]
                 history[-1] = (last_user_msg, assistant_accumulated)
@@ -146,21 +171,21 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
                 m = chunk["metrics"]
                 final_metrics = f"⚡ **Latency:** {m['elapsed_sec']}s | 🚀 **Speed:** {m['tokens_per_sec']} tokens/s | 🔢 **Token Count:** {m['token_count']} tokens"
                 
-                yield history, mem_display, final_metrics
+                yield history, cit_display, final_metrics
 
             controller.add_assistant_message(assistant_accumulated)
-            yield history, mem_display, final_metrics
+            yield history, cit_display, final_metrics
 
         # Event triggers
         send_event = send_btn.click(
             fn=user_submit,
             inputs=[msg_input, chatbot, model_dropdown],
-            outputs=[chatbot, msg_input, memory_context_md, metrics_md]
+            outputs=[chatbot, msg_input, rag_citations_md, metrics_md]
         )
         submit_event = msg_input.submit(
             fn=user_submit,
             inputs=[msg_input, chatbot, model_dropdown],
-            outputs=[chatbot, msg_input, memory_context_md, metrics_md]
+            outputs=[chatbot, msg_input, rag_citations_md, metrics_md]
         )
 
         stop_btn.click(fn=None, cancels=[send_event, submit_event])
@@ -168,14 +193,14 @@ def render_chat_tab(controller: AppController, model_dropdown: gr.Dropdown):
         regen_btn.click(
             fn=regenerate_submit,
             inputs=[chatbot, model_dropdown],
-            outputs=[chatbot, memory_context_md, metrics_md]
+            outputs=[chatbot, rag_citations_md, metrics_md]
         )
 
         def clear_chat():
             controller.clear_active_session()
-            return [], "*Cleared memory context.*", "⚡ Chat cleared."
+            return [], "*Cleared citations context.*", "⚡ Chat cleared."
 
-        clear_btn.click(fn=clear_chat, outputs=[chatbot, memory_context_md, metrics_md])
+        clear_btn.click(fn=clear_chat, outputs=[chatbot, rag_citations_md, metrics_md])
 
         # Export Handlers
         def export_chat(fmt: str):
