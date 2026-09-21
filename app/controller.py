@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Central Application Controller (Phase 7 Expanded)
-Orchestrates Config, DB, Ollama Engine, Sessions, Long-Term Memory, Knowledge Engine, Profile Engine, Reasoning Engine, and Workflow Engine.
+AetherMind Cortex Central Application Controller (Phase 8 Expanded)
+Orchestrates Config, DB, Ollama Engine, Sessions, Long-Term Memory, Knowledge Engine, Profile Engine, Reasoning Engine, Workflow Engine, and Decision Intelligence Engine.
 """
 
 from typing import Dict, Any, Optional, List
@@ -17,6 +17,7 @@ from core.knowledge_engine import KnowledgeEngine
 from core.profile_manager import ProfileManager
 from core.reasoning_engine import ReasoningEngine
 from core.workflow_engine import WorkflowEngine
+from core.decision_engine import DecisionEngine
 
 logger = get_logger("AppController")
 
@@ -34,7 +35,7 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller (Phase 7)...")
+        logger.info("Initializing AetherMind Cortex Central Controller (Phase 8)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
@@ -50,13 +51,14 @@ class AppController:
         self.profile_manager = ProfileManager(self.db_conn)
         self.reasoning_engine = ReasoningEngine()
         self.workflow_engine = WorkflowEngine(self.db_conn)
+        self.decision_engine = DecisionEngine(self.db_conn)
         
         # Active session state
         self.current_session_id: Optional[str] = None
         self.ensure_active_session()
 
         self._initialized = True
-        logger.info("AetherMind Cortex Controller Phase 7 initialized successfully.")
+        logger.info("AetherMind Cortex Controller Phase 8 initialized successfully.")
 
     def ensure_active_session(self) -> str:
         """Ensures there is an active session loaded."""
@@ -85,6 +87,7 @@ class AppController:
         memory_count = len(self.memory_manager.list_memories(include_archived=True))
         doc_count = len(self.knowledge_engine.list_indexed_documents())
         task_count = len(self.workflow_engine.list_tasks(status="all"))
+        decision_count = len(self.decision_engine.list_saved_decisions())
         user_name = self.profile_manager.get_profile_attribute("user_name", "User")
         
         return {
@@ -95,6 +98,7 @@ class AppController:
             "memory_count": memory_count,
             "doc_count": doc_count,
             "task_count": task_count,
+            "decision_count": decision_count,
             "user_name": user_name,
             "version": get_version_string(),
             "theme": current_theme,

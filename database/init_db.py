@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Database Schema (Phase 7 Expanded)
-Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, and logs_audit.
+AetherMind Cortex Database Schema (Phase 8 Expanded)
+Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, decisions, decision_options, and logs_audit.
 """
 
 from database.connection import DBConnection
@@ -84,19 +84,41 @@ CREATE TABLE IF NOT EXISTS workflow_tasks (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     project_name TEXT DEFAULT 'General',
-    priority TEXT DEFAULT 'medium', -- 'high', 'medium', 'low'
+    priority TEXT DEFAULT 'medium',
     estimated_hours REAL DEFAULT 1.0,
-    status TEXT DEFAULT 'todo', -- 'todo', 'in_progress', 'completed'
+    status TEXT DEFAULT 'todo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Workflow Automation Suggestions Table
 CREATE TABLE IF NOT EXISTS workflow_insights (
     id TEXT PRIMARY KEY,
-    category TEXT NOT NULL, -- 'automation', 'productivity', 'pattern'
+    category TEXT NOT NULL,
     suggestion TEXT NOT NULL,
-    impact TEXT DEFAULT 'medium', -- 'high', 'medium', 'low'
+    impact TEXT DEFAULT 'medium',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Decision Intelligence Master Table
+CREATE TABLE IF NOT EXISTS decisions (
+    id TEXT PRIMARY KEY,
+    topic TEXT NOT NULL,
+    recommended_option TEXT NOT NULL,
+    confidence_score REAL DEFAULT 90.0,
+    feedback_rating INTEGER DEFAULT 0, -- 1-5 star rating
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Decision Options Table
+CREATE TABLE IF NOT EXISTS decision_options (
+    id TEXT PRIMARY KEY,
+    decision_id TEXT NOT NULL,
+    option_name TEXT NOT NULL,
+    score REAL NOT NULL,
+    risk_level TEXT DEFAULT 'medium', -- 'low', 'medium', 'high'
+    pros TEXT,
+    cons TEXT,
+    FOREIGN KEY(decision_id) REFERENCES decisions(id) ON DELETE CASCADE
 );
 
 -- Audit Log Table
@@ -118,7 +140,7 @@ def initialize_database(db_connection: DBConnection = None) -> bool:
         with connection.get_connection() as conn:
             cursor = conn.cursor()
             cursor.executescript(SCHEMA_SQL)
-            logger.info("Database schema initialized successfully (Phase 7 schema active).")
+            logger.info("Database schema initialized successfully (Phase 8 schema active).")
             return True
     except Exception as e:
         logger.error(f"Failed to initialize database schema: {e}")

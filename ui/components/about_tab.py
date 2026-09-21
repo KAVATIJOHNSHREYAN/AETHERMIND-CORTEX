@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI (Phase 7 Expanded)
+About Page Component for AetherMind Cortex UI (Phase 8 Expanded)
 """
 
 import gradio as gr
@@ -23,10 +23,11 @@ def render_about_tab(controller: AppController):
             """)
             
         gr.Markdown("""
-        ### Phase 7 Workflow Intelligence Milestones
-        - ✅ Workflow Analyzer (Tasks, repetitive activities, productivity trends)
-        - ✅ Task Intelligence Engine (Dependency tracking, priority scoring, estimated completion times)
-        - ✅ Smart Suggestions & Automation Generator
-        - ✅ Interactive Workflow Intelligence Dashboard UI
+        ### Phase 8 Decision Intelligence Milestones
+        - ✅ Multi-Criteria Decision Analysis (MCDA) Weighted Scoring Framework
+        - ✅ Alternative Comparison & Option Ranking (Best, Fastest, Safest, Scalable)
+        - ✅ Technical & Resource Risk Matrix Evaluation
+        - ✅ Interactive Decision Intelligence Dashboard UI
+        - ✅ Decision History Persistence & Continuous Feedback Loop
         - ✅ 100% Offline Architecture - Zero cloud dependency & privacy-first design
         """)
