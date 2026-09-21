@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI (Phase 8 Expanded)
+About Page Component for AetherMind Cortex UI (Phase 9 Expanded)
 """
 
 import gradio as gr
@@ -23,11 +23,11 @@ def render_about_tab(controller: AppController):
             """)
             
         gr.Markdown("""
-        ### Phase 8 Decision Intelligence Milestones
-        - ✅ Multi-Criteria Decision Analysis (MCDA) Weighted Scoring Framework
-        - ✅ Alternative Comparison & Option Ranking (Best, Fastest, Safest, Scalable)
-        - ✅ Technical & Resource Risk Matrix Evaluation
-        - ✅ Interactive Decision Intelligence Dashboard UI
-        - ✅ Decision History Persistence & Continuous Feedback Loop
+        ### Phase 9 Modular Expert Skills Milestones
+        - ✅ Abstract Base Skill Interface (`BaseSkill`)
+        - ✅ 6 Domain Experts: Software Engineering, Research Synthesis, Technical Writing, Data Analytics, Learning Pedagogy, Agile Project Planner
+        - ✅ Skill Manager Registry & SQLite Synchronization (`registered_skills` table)
+        - ✅ Interactive Skills Dashboard UI (Toggle Enable/Disable, Priority Manager)
+        - ✅ Dynamic Expert System Prompt Context Injection into local Ollama streams
         - ✅ 100% Offline Architecture - Zero cloud dependency & privacy-first design
         """)

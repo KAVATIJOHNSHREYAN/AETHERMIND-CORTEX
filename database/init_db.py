@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Database Schema (Phase 8 Expanded)
-Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, decisions, decision_options, and logs_audit.
+AetherMind Cortex Database Schema (Phase 9 Expanded)
+Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, decisions, decision_options, registered_skills, and logs_audit.
 """
 
 from database.connection import DBConnection
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS decisions (
     topic TEXT NOT NULL,
     recommended_option TEXT NOT NULL,
     confidence_score REAL DEFAULT 90.0,
-    feedback_rating INTEGER DEFAULT 0, -- 1-5 star rating
+    feedback_rating INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -115,10 +115,21 @@ CREATE TABLE IF NOT EXISTS decision_options (
     decision_id TEXT NOT NULL,
     option_name TEXT NOT NULL,
     score REAL NOT NULL,
-    risk_level TEXT DEFAULT 'medium', -- 'low', 'medium', 'high'
+    risk_level TEXT DEFAULT 'medium',
     pros TEXT,
     cons TEXT,
     FOREIGN KEY(decision_id) REFERENCES decisions(id) ON DELETE CASCADE
+);
+
+-- Registered Modular Expert Skills Table
+CREATE TABLE IF NOT EXISTS registered_skills (
+    skill_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    description TEXT,
+    enabled INTEGER DEFAULT 1,
+    priority INTEGER DEFAULT 5,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Audit Log Table
@@ -140,7 +151,7 @@ def initialize_database(db_connection: DBConnection = None) -> bool:
         with connection.get_connection() as conn:
             cursor = conn.cursor()
             cursor.executescript(SCHEMA_SQL)
-            logger.info("Database schema initialized successfully (Phase 8 schema active).")
+            logger.info("Database schema initialized successfully (Phase 9 schema active).")
             return True
     except Exception as e:
         logger.error(f"Failed to initialize database schema: {e}")
