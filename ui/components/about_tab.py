@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI
+About Page Component for AetherMind Cortex UI (Phase 3 Expanded)
 """
 
 import gradio as gr
@@ -18,15 +18,15 @@ def render_about_tab(controller: AppController):
             - **Python Target:** `{meta['python_target']}`
             - **Architecture:** Clean Modular Python Architecture (No JS Frameworks)
             - **UI Framework:** Gradio
-            - **Storage Engine:** SQLite 3
+            - **Storage Engine:** SQLite 3 & ChromaDB Local Vector Store
             - **Repository:** `https://github.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX`
             """)
             
         gr.Markdown("""
-        ### Phase 1 Architectural Milestones
-        - ✅ Modular Directory Structure (`app`, `core`, `config`, `database`, `ui`, `utils`, `logs`, `tests`, `docs`)
-        - ✅ Persistent SQLite database configuration & schema management
-        - ✅ Dual console & file logger with rotation
-        - ✅ Modern Python-first Gradio web application layout
-        - ✅ Dynamic runtime configuration manager
+        ### Phase 3 Privacy & Memory Milestones
+        - ✅ Privacy-First Long-Term Memory Engine (User, Project, Conversation memories)
+        - ✅ ChromaDB Semantic Vector Embedding & Retrieval (`database/memory_vector/`)
+        - ✅ Interactive Memory Dashboard UI (Add, Search, Pin, Archive)
+        - ✅ Dynamic Memory Prompt Context Injection into Ollama local LLM stream
+        - ✅ 100% Offline Architecture - Zero external API/cloud dependency
         """)

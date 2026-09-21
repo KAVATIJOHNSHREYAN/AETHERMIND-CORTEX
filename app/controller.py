@@ -1,9 +1,9 @@
 """
-AetherMind Cortex Central Application Controller (Phase 2 Expanded)
-Orchestrates Config, DB, Ollama Engine, and Session History.
+AetherMind Cortex Central Application Controller (Phase 3 Expanded)
+Orchestrates Config, DB, Ollama Engine, Session History, and Long-Term Memory Engine.
 """
 
-from typing import Dict, Any, Optional, List, Generator
+from typing import Dict, Any, Optional, List
 from core.config_manager import ConfigManager
 from core.logger import get_logger
 from core.settings import SettingsManager
@@ -12,11 +12,12 @@ from database.connection import DBConnection
 from database.init_db import initialize_database
 from core.llm_engine import OllamaEngine
 from core.session_manager import SessionManager
+from core.memory_manager import MemoryManager
 
 logger = get_logger("AppController")
 
 class AppController:
-    """Central Application Controller managing application lifecycle, LLM engine, and session state."""
+    """Central Application Controller managing lifecycle, LLM engine, sessions, and memory."""
     _instance: Optional["AppController"] = None
 
     def __new__(cls):
@@ -29,7 +30,7 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller (Phase 2)...")
+        logger.info("Initializing AetherMind Cortex Central Controller (Phase 3)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
@@ -37,16 +38,17 @@ class AppController:
         # Initialize SQLite DB
         self.db_initialized = initialize_database(self.db_conn)
         
-        # Initialize LLM Engine & Session Manager
+        # Initialize LLM Engine, Session Manager & Memory Engine
         self.llm_engine = OllamaEngine()
         self.session_manager = SessionManager(self.db_conn)
+        self.memory_manager = MemoryManager(self.db_conn)
         
         # Active session state
         self.current_session_id: Optional[str] = None
         self.ensure_active_session()
 
         self._initialized = True
-        logger.info("AetherMind Cortex Controller Phase 2 initialized successfully.")
+        logger.info("AetherMind Cortex Controller Phase 3 initialized successfully.")
 
     def ensure_active_session(self) -> str:
         """Ensures there is an active session loaded."""
@@ -72,11 +74,14 @@ class AppController:
         db_healthy = self.db_conn.check_health()
         ollama_status = self.get_ollama_status()
         current_theme = self.settings_manager.get_setting("app.theme", "dark")
+        memory_count = len(self.memory_manager.list_memories(include_archived=True))
+        
         return {
             "status": "Online" if (db_healthy and ollama_status["online"]) else "Degraded",
             "db_healthy": db_healthy,
             "ollama_online": ollama_status["online"],
             "ollama_models": ollama_status["model_count"],
+            "memory_count": memory_count,
             "version": get_version_string(),
             "theme": current_theme,
             "app_name": self.config_manager.config.app.name,

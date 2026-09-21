@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Database Initialization & Migration
-Sets up required relational tables for state, audit logs, key-value settings, sessions, and messages.
+AetherMind Cortex Database Schema (Phase 3 Expanded)
+Includes app_settings, sessions, messages, logs_audit, and memories.
 """
 
 from database.connection import DBConnection
@@ -38,6 +38,19 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY(session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
 
+-- Long-Term Memory Engine Table
+CREATE TABLE IF NOT EXISTS memories (
+    id TEXT PRIMARY KEY,
+    category TEXT NOT NULL, -- 'user', 'project', 'conversation'
+    key TEXT NOT NULL,
+    content TEXT NOT NULL,
+    importance INTEGER DEFAULT 5, -- 1-10
+    is_pinned INTEGER DEFAULT 0,
+    is_archived INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Audit Log Table
 CREATE TABLE IF NOT EXISTS logs_audit (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +70,7 @@ def initialize_database(db_connection: DBConnection = None) -> bool:
         with connection.get_connection() as conn:
             cursor = conn.cursor()
             cursor.executescript(SCHEMA_SQL)
-            logger.info("Database schema initialized successfully (Phase 2 schema active).")
+            logger.info("Database schema initialized successfully (Phase 3 schema active).")
             return True
     except Exception as e:
         logger.error(f"Failed to initialize database schema: {e}")
