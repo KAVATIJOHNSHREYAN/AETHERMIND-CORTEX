@@ -266,9 +266,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Top Bar Navigation matching Mockup UI Header exactly
-st.markdown("""
-<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 22px; background: rgba(8, 13, 25, 0.95); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 16px; margin-bottom: 20px;">
+# Top Bar Navigation & Real Search Input
+hcol1, hcol2, hcol3 = st.columns([1.8, 2.2, 1.5])
+
+with hcol1:
+    st.markdown("""
     <div style="display: flex; align-items: center; gap: 14px;">
         <img src="https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png" style="width: 44px; height: 44px; border-radius: 10px; box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);" />
         <div>
@@ -276,18 +278,26 @@ st.markdown("""
             <span style="font-size: 0.75rem; color: #94a3b8;">Human-Centered AI Reasoning Engine</span>
         </div>
     </div>
-    <div style="flex-grow: 1; max-width: 420px; margin: 0 30px;">
-        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 20px; padding: 6px 16px; display: flex; align-items: center; justify-content: space-between;">
-            <span style="color: #64748b; font-size: 0.82rem;">🔍 Search chats, tools, or anything...</span>
-            <span style="background: rgba(30, 41, 59, 0.9); color: #94a3b8; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px;">Ctrl + K</span>
-        </div>
+    """, unsafe_allow_html=True)
+
+with hcol2:
+    search_query = st.text_input(
+        "Header Search",
+        placeholder="🔍 Search chats, tools, or anything... (Ctrl + K)",
+        label_visibility="collapsed",
+        key="global_header_search"
+    )
+    if search_query:
+        st.session_state["preset_prompt"] = f"Search and analyze context for: {search_query}"
+        st.session_state["pending_nav"] = "💬 Reasoning Workspace"
+
+with hcol3:
+    st.markdown("""
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-top: 4px;">
+        <span style="font-size: 0.82rem; color: #94a3b8; display: inline-block;">"Think • Adapt • Assist"</span>
+        <span style="font-size: 0.82rem; background: rgba(30, 41, 59, 0.9); color: #ffffff; padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 700;">KAVATI ▾</span>
     </div>
-    <div style="display: flex; align-items: center; gap: 16px;">
-        <span style="font-size: 0.82rem; color: #94a3b8;">"Think • Understand • Adapt • Assist"</span>
-        <span style="font-size: 0.82rem; background: rgba(30, 41, 59, 0.8); color: #f8fafc; padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.25); font-weight: 600;">KAVATI ▾</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 nav_options = ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"]
 
