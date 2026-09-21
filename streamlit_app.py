@@ -242,38 +242,96 @@ if page_selection == "💬 Reasoning Workspace":
 
 elif page_selection == "🛠️ Expert Skills":
     st.subheader("🛠️ Expert Skills Platform")
+    st.info("Toggle active AI expert skills to inject domain-specific context into reasoning.")
     skills = controller.skill_manager.list_skills()
     for s in skills:
-        st.checkbox(f"**{s['name']}** - {s['description']}", value=s['enabled'] == 1)
+        enabled = st.toggle(f"**{s['name']}**", value=s['enabled'] == 1, help=s['description'])
+        if enabled != (s['enabled'] == 1):
+            controller.skill_manager.set_skill_status(s['skill_id'], enabled)
+            st.toast(f"Updated {s['name']} status!")
 
 elif page_selection == "🔌 Plugins & Workspaces":
     st.subheader("🔌 Plugins & Workspace Switcher")
-    workspaces = controller.workspace_manager.list_workspaces()
-    st.write("Active Workspaces:", workspaces)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### 📂 Active Workspaces")
+        workspaces = controller.workspace_manager.list_workspaces()
+        for w in workspaces:
+            st.write(f"- **{w['name']}**: `{w['path']}`")
+        new_w_name = st.text_input("New Workspace Name")
+        new_w_path = st.text_input("Workspace Path", value="./workspace")
+        if st.button("Create Workspace"):
+            if new_w_name:
+                controller.workspace_manager.create_workspace(new_w_name, new_w_path)
+                st.success("Workspace created!")
+                st.rerun()
+    with col2:
+        st.markdown("#### 🧩 Installed Extension Plugins")
+        plugins = controller.plugin_manager.list_plugins()
+        st.write(plugins)
 
 elif page_selection == "📚 Knowledge Base":
-    st.subheader("📚 Knowledge Base (Offline RAG)")
+    st.subheader("📚 Knowledge Base (Offline RAG Engine)")
+    uploaded_files = st.file_uploader("Upload Documents to Ingest", accept_multiple_files=True, type=["pdf", "docx", "txt", "md", "py"])
+    if uploaded_files:
+        for f in uploaded_files:
+            save_path = os.path.join("database", f.name)
+            with open(save_path, "wb") as w:
+                w.write(f.getvalue())
+            controller.knowledge_engine.ingest_document(save_path)
+        st.success(f"Ingested {len(uploaded_files)} documents into ChromaDB Vector Store!")
+        
+    st.markdown("#### 📄 Currently Indexed Documents")
     docs = controller.knowledge_engine.list_indexed_documents()
-    st.metric("Indexed Documents", len(docs))
-    st.write(docs)
+    if docs:
+        st.table(docs)
+    else:
+        st.caption("No documents indexed yet.")
 
 elif page_selection == "⚡ Automation":
-    st.subheader("⚡ Local Automation & Reminders")
-    tasks = controller.workflow_engine.list_tasks(status="all")
-    st.write("Tasks:", tasks)
+    st.subheader("⚡ Local Automation & Task Intelligence")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### 📋 Task List")
+        tasks = controller.workflow_engine.list_tasks(status="all")
+        if tasks:
+            st.write(tasks)
+        else:
+            st.caption("No active tasks.")
+    with col2:
+        st.markdown("#### ⏰ Reminders")
+        rem_title = st.text_input("Reminder Title")
+        if st.button("Set Local Reminder"):
+            if rem_title:
+                controller.automation_engine.add_reminder(rem_title)
+                st.success("Reminder created!")
 
 elif page_selection == "⚙️ Settings":
-    st.subheader("⚙️ System Settings")
+    st.subheader("⚙️ System Settings & Preferences")
     st.text_input("Ollama Host URL", value=controller.llm_engine.host)
+    theme_choice = st.selectbox("Application Theme", options=["dark", "light"], index=0)
+    if st.button("Save System Settings"):
+        controller.update_theme(theme_choice)
+        st.success("Settings saved successfully!")
 
 elif page_selection == "🩺 Diagnostics":
-    st.subheader("🩺 System Diagnostics & Self-Healing")
-    if st.button("Run System Health Check"):
-        st.json(controller.diagnostics_engine.run_full_diagnostics())
-    if st.button("Execute Self-Healing Repair"):
-        st.success(controller.diagnostics_engine.execute_self_healing_repair()["message"])
+    st.subheader("🩺 System Diagnostics & Self-Healing Maintenance")
+    dcol1, dcol2 = st.columns(2)
+    with dcol1:
+        if st.button("Run System Health Check", use_container_width=True):
+            st.json(controller.diagnostics_engine.run_full_diagnostics())
+    with dcol2:
+        if st.button("Execute Self-Healing Repair", use_container_width=True):
+            res = controller.diagnostics_engine.execute_self_healing_repair()
+            st.success(res["message"])
 
 elif page_selection == "ℹ️ About":
     st.subheader("ℹ️ About AetherMind Cortex")
     st.markdown(f"**Version:** `{meta['version']}` ({meta['stage']})")
-    st.markdown("100% Offline, Privacy-First Human-Centered AI Reasoning Platform.")
+    st.markdown("""
+    - **Architecture:** Clean Modular Python Architecture (SOLID)
+    - **Vector Store:** ChromaDB Local Vector Engine
+    - **Relational DB:** SQLite 3 Persistence
+    - **Privacy:** 100% Offline Core (Zero Cloud Telemetry)
+    """)
+
