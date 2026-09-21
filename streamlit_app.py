@@ -289,6 +289,23 @@ with st.sidebar:
     )
     
     st.markdown("---")
+    st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Chat Session History</span>", unsafe_allow_html=True)
+    sessions = controller.session_manager.list_sessions()
+    session_options = {s["id"]: f"{s['title']} ({s['created_at'][:10] if s.get('created_at') else 'Recent'})" for s in sessions}
+    if session_options:
+        current_id = controller.current_session_id or list(session_options.keys())[0]
+        selected_sid = st.selectbox(
+            "Select Conversation:",
+            options=list(session_options.keys()),
+            format_func=lambda x: session_options[x],
+            index=list(session_options.keys()).index(current_id) if current_id in session_options else 0,
+            label_visibility="collapsed"
+        )
+        if selected_sid != controller.current_session_id:
+            controller.switch_session(selected_sid)
+            st.rerun()
+
+    st.markdown("---")
     st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Quick Actions</span>", unsafe_allow_html=True)
     q1, q2 = st.columns(2)
     with q1:
@@ -435,6 +452,38 @@ if page_selection == "💬 Reasoning Workspace":
         st.caption("Active Expert Skills Context: Active")
         st.caption("Reasoning pipeline inspection logs will appear here during execution.")
         st.markdown("⚡ **Latency:** 0.0s | 🚀 **Speed:** 0.0 tokens/s | 🔢 **Token Count:** 0 tokens")
+
+    # Chat Export Action Bar
+    st.markdown("<p style='margin:16px 0 6px 0; font-size:0.8rem; color:#64748b; font-weight:700; text-transform:uppercase;'>📥 Export Conversation Reasoning Outputs</p>", unsafe_allow_html=True)
+    e1, e2, e3 = st.columns(3)
+    md_content = controller.export_active_session("markdown")
+    json_content = controller.export_active_session("json")
+    txt_content = controller.export_active_session("txt")
+    
+    with e1:
+        st.download_button(
+            label="📄 Export as Markdown (.md)",
+            data=md_content,
+            file_name=f"aethermind_chat_{controller.current_session_id[:8] if controller.current_session_id else 'export'}.md",
+            mime="text/markdown",
+            use_container_width=True
+        )
+    with e2:
+        st.download_button(
+            label="📊 Export as JSON (.json)",
+            data=json_content,
+            file_name=f"aethermind_chat_{controller.current_session_id[:8] if controller.current_session_id else 'export'}.json",
+            mime="application/json",
+            use_container_width=True
+        )
+    with e3:
+        st.download_button(
+            label="📝 Export as Text (.txt)",
+            data=txt_content,
+            file_name=f"aethermind_chat_{controller.current_session_id[:8] if controller.current_session_id else 'export'}.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
 
 elif page_selection == "🛠️ Expert Skills":
     st.markdown("""

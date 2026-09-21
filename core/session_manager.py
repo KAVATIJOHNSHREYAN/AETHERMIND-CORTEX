@@ -110,12 +110,20 @@ class SessionManager:
             return False
 
     def export_session(self, session_id: str, format_type: str = "markdown") -> str:
-        """Exports chat session to formatted Markdown or Plain Text string."""
+        """Exports chat session to formatted Markdown, JSON, or Plain Text string."""
+        import json
         messages = self.get_session_messages(session_id)
         if not messages:
             return "No messages in session."
 
-        if format_type.lower() == "markdown":
+        fmt = format_type.lower()
+        if fmt == "json":
+            return json.dumps({
+                "session_id": session_id,
+                "message_count": len(messages),
+                "messages": messages
+            }, indent=2)
+        elif fmt == "markdown":
             output = f"# AetherMind Cortex - Chat Export ({session_id[:8]})\n\n"
             for msg in messages:
                 role_header = "### 👤 User" if msg["role"] == "user" else "### 🧠 AetherMind"
