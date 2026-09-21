@@ -237,6 +237,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+nav_options = ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"]
+if "nav_page" not in st.session_state or st.session_state["nav_page"] not in nav_options:
+    st.session_state["nav_page"] = "💬 Reasoning Workspace"
+
 # Sidebar Header & Navigation
 with st.sidebar:
     st.image("https://raw.githubusercontent.com/KAVATIJOHNSHREYAN/AETHERMIND-CORTEX/main/assets/logo.png", width=64)
@@ -247,7 +251,8 @@ with st.sidebar:
     st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Navigation & Modules</span>", unsafe_allow_html=True)
     page_selection = st.radio(
         "Module Navigation:",
-        ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"],
+        nav_options,
+        key="nav_page",
         label_visibility="collapsed"
     )
     
@@ -259,13 +264,19 @@ with st.sidebar:
             controller.create_new_session()
             st.rerun()
     with q2:
-        st.button("📂 Upload File", use_container_width=True)
+        if st.button("📂 Upload File", use_container_width=True):
+            st.session_state["nav_page"] = "📚 Knowledge Base"
+            st.rerun()
         
     q3, q4 = st.columns(2)
     with q3:
-        st.button("📁 Workspace", use_container_width=True)
+        if st.button("📁 Workspace", use_container_width=True):
+            st.session_state["nav_page"] = "🔌 Plugins & Workspaces"
+            st.rerun()
     with q4:
-        st.button("✨ Skills", use_container_width=True)
+        if st.button("✨ Skills", use_container_width=True):
+            st.session_state["nav_page"] = "🛠️ Expert Skills"
+            st.rerun()
 
     st.markdown("---")
     st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Model & System</span>", unsafe_allow_html=True)
@@ -301,15 +312,27 @@ if page_selection == "💬 Reasoning Workspace":
             <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 0.92rem;">
                 Your personal AI reasoning partner. Choose a prompt, upload a file, or start a new conversation.
             </p>
-            <div>
-                <span class="action-pill">💡 Explain a concept</span>
-                <span class="action-pill">📂 Analyze a file</span>
-                <span class="action-pill">⚙️ Solve a problem</span>
-                <span class="action-pill">📊 Create a plan</span>
-                <span class="action-pill">More ▾</span>
-            </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        st.markdown("<p style='margin: 0 0 8px 0; font-size: 0.8rem; color: #64748b; font-weight:600; text-transform:uppercase;'>Suggested Prompts & Quick Actions</p>", unsafe_allow_html=True)
+        p1, p2, p3, p4 = st.columns(4)
+        with p1:
+            if st.button("💡 Explain concept", use_container_width=True):
+                st.session_state["preset_prompt"] = "Explain the core architecture of local LLM reasoning pipelines and retrieval-augmented generation."
+                st.rerun()
+        with p2:
+            if st.button("📂 Upload / RAG", use_container_width=True):
+                st.session_state["nav_page"] = "📚 Knowledge Base"
+                st.rerun()
+        with p3:
+            if st.button("⚙️ Architecture", use_container_width=True):
+                st.session_state["preset_prompt"] = "Compare microservices vs monolith architectures for a privacy-first desktop application using SQLite and DuckDB."
+                st.rerun()
+        with p4:
+            if st.button("📊 Planning", use_container_width=True):
+                st.session_state["preset_prompt"] = "Create a step-by-step implementation plan for adding full-text search index and hybrid RAG caching."
+                st.rerun()
 
     with col_quote:
         st.markdown("""
@@ -331,28 +354,36 @@ if page_selection == "💬 Reasoning Workspace":
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
+    # Handle preset prompt execution if clicked
+    active_input = None
+    if "preset_prompt" in st.session_state and st.session_state["preset_prompt"]:
+        active_input = st.session_state.pop("preset_prompt")
+
     # Chat Bar Controls
     prompt = st.chat_input("Type your technical prompt or complex query here...")
-    if prompt:
+    if not active_input and prompt:
+        active_input = prompt
+
+    if active_input:
         with st.chat_message("user"):
-            st.write(prompt)
-        controller.add_user_message(prompt)
+            st.write(active_input)
+        controller.add_user_message(active_input)
         
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             
             skills_context = controller.skill_manager.get_active_skills_prompt_injection()
             reasoning_prompt = controller.reasoning_engine.generate_reasoning_pipeline_prompt(
-                prompt=prompt,
+                prompt=active_input,
                 user_context=controller.profile_manager.get_personalized_prompt_context(),
-                memory_context=controller.memory_manager.get_context_prompt_injection(prompt),
-                rag_context=controller.knowledge_engine.get_rag_context_injection(prompt)[0]
+                memory_context=controller.memory_manager.get_context_prompt_injection(active_input),
+                rag_context=controller.knowledge_engine.get_rag_context_injection(active_input)[0]
             )
             if skills_context:
                 reasoning_prompt += "\n" + skills_context
 
             history_msgs = [{"role": m["role"], "content": m["content"]} for m in messages]
-            history_msgs.append({"role": "user", "content": prompt})
+            history_msgs.append({"role": "user", "content": active_input})
 
             response_accumulated = ""
             for chunk in controller.llm_engine.stream_chat(
