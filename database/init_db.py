@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Database Schema (Phase 5 Expanded)
-Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, and logs_audit.
+AetherMind Cortex Database Schema (Phase 7 Expanded)
+Includes app_settings, sessions, messages, memories, indexed_documents, user_profile, user_goals, workflow_tasks, workflow_insights, and logs_audit.
 """
 
 from database.connection import DBConnection
@@ -73,9 +73,29 @@ CREATE TABLE IF NOT EXISTS user_profile (
 CREATE TABLE IF NOT EXISTS user_goals (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    category TEXT DEFAULT 'current', -- 'current', 'long_term', 'learning'
+    category TEXT DEFAULT 'current',
+    priority TEXT DEFAULT 'medium',
+    status TEXT DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Workflow Intelligence Tasks Table
+CREATE TABLE IF NOT EXISTS workflow_tasks (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    project_name TEXT DEFAULT 'General',
     priority TEXT DEFAULT 'medium', -- 'high', 'medium', 'low'
-    status TEXT DEFAULT 'active', -- 'active', 'completed'
+    estimated_hours REAL DEFAULT 1.0,
+    status TEXT DEFAULT 'todo', -- 'todo', 'in_progress', 'completed'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Workflow Automation Suggestions Table
+CREATE TABLE IF NOT EXISTS workflow_insights (
+    id TEXT PRIMARY KEY,
+    category TEXT NOT NULL, -- 'automation', 'productivity', 'pattern'
+    suggestion TEXT NOT NULL,
+    impact TEXT DEFAULT 'medium', -- 'high', 'medium', 'low'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -98,7 +118,7 @@ def initialize_database(db_connection: DBConnection = None) -> bool:
         with connection.get_connection() as conn:
             cursor = conn.cursor()
             cursor.executescript(SCHEMA_SQL)
-            logger.info("Database schema initialized successfully (Phase 5 schema active).")
+            logger.info("Database schema initialized successfully (Phase 7 schema active).")
             return True
     except Exception as e:
         logger.error(f"Failed to initialize database schema: {e}")

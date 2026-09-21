@@ -1,6 +1,6 @@
 """
-AetherMind Cortex UI Layout Assembly (Phase 5 Expanded)
-Assembles sidebar, streaming chat, long-term memory dashboard, knowledge engine, human profile dashboard, settings, about, and status bar.
+AetherMind Cortex UI Layout Assembly (Phase 7 Expanded)
+Assembles sidebar, streaming chat workspace, human profile, long-term memory, knowledge engine, workflow intelligence dashboard, settings, about, and status bar.
 """
 
 import gradio as gr
@@ -8,25 +8,26 @@ from app.controller import AppController
 from ui.theme import get_theme, CUSTOM_CSS
 from ui.components.sidebar import render_sidebar
 from ui.components.chat import render_chat_tab
+from ui.components.profile_tab import render_profile_tab
 from ui.components.memory_tab import render_memory_tab
 from ui.components.knowledge_tab import render_knowledge_tab
-from ui.components.profile_tab import render_profile_tab
+from ui.components.workflow_tab import render_workflow_tab
 from ui.components.settings_tab import render_settings_tab
 from ui.components.about_tab import render_about_tab
 from ui.components.status_bar import render_status_bar
 
 def build_ui(controller: AppController) -> gr.Blocks:
-    """Assembles and returns the Gradio UI Blocks interface for Phase 5."""
+    """Assembles and returns the Gradio UI Blocks interface for Phase 7."""
     current_theme_name = controller.settings_manager.get_setting("app.theme", "dark")
     theme = get_theme(current_theme_name)
     
     with gr.Blocks(
         theme=theme,
         css=CUSTOM_CSS,
-        title="AetherMind Cortex - Human-Centered AI Engine"
+        title="AetherMind Cortex - Workflow Intelligence Platform"
     ) as demo:
         with gr.Row(elem_classes=["aether-header"]):
-            gr.Markdown("# 🧠 AetherMind Cortex (Human-Centered AI Engine)")
+            gr.Markdown("# 🧠 AetherMind Cortex (Human-Centered Workflow AI)")
             
         with gr.Row():
             # Left Sidebar Navigation & Controls
@@ -36,6 +37,7 @@ def build_ui(controller: AppController) -> gr.Blocks:
             with gr.Column(scale=4):
                 with gr.Tabs():
                     chatbot, load_active_history = render_chat_tab(controller, model_dropdown)
+                    render_workflow_tab(controller)
                     render_profile_tab(controller)
                     render_memory_tab(controller)
                     render_knowledge_tab(controller)

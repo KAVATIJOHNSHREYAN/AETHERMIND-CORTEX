@@ -1,6 +1,6 @@
 """
-AetherMind Cortex Central Application Controller (Phase 6 Expanded)
-Orchestrates Config, DB, Ollama Engine, Sessions, Long-Term Memory, Knowledge Engine, Profile Engine, and Cognitive Reasoning Engine.
+AetherMind Cortex Central Application Controller (Phase 7 Expanded)
+Orchestrates Config, DB, Ollama Engine, Sessions, Long-Term Memory, Knowledge Engine, Profile Engine, Reasoning Engine, and Workflow Engine.
 """
 
 from typing import Dict, Any, Optional, List
@@ -16,11 +16,12 @@ from core.memory_manager import MemoryManager
 from core.knowledge_engine import KnowledgeEngine
 from core.profile_manager import ProfileManager
 from core.reasoning_engine import ReasoningEngine
+from core.workflow_engine import WorkflowEngine
 
 logger = get_logger("AppController")
 
 class AppController:
-    """Central Application Controller managing lifecycle, LLM engine, sessions, memory, RAG, profile, and reasoning engine."""
+    """Central Application Controller managing all sub-systems."""
     _instance: Optional["AppController"] = None
 
     def __new__(cls):
@@ -33,7 +34,7 @@ class AppController:
         if self._initialized:
             return
 
-        logger.info("Initializing AetherMind Cortex Central Controller (Phase 6)...")
+        logger.info("Initializing AetherMind Cortex Central Controller (Phase 7)...")
         self.config_manager = ConfigManager()
         self.db_conn = DBConnection()
         self.settings_manager = SettingsManager(self.db_conn)
@@ -48,13 +49,14 @@ class AppController:
         self.knowledge_engine = KnowledgeEngine(self.db_conn)
         self.profile_manager = ProfileManager(self.db_conn)
         self.reasoning_engine = ReasoningEngine()
+        self.workflow_engine = WorkflowEngine(self.db_conn)
         
         # Active session state
         self.current_session_id: Optional[str] = None
         self.ensure_active_session()
 
         self._initialized = True
-        logger.info("AetherMind Cortex Controller Phase 6 initialized successfully.")
+        logger.info("AetherMind Cortex Controller Phase 7 initialized successfully.")
 
     def ensure_active_session(self) -> str:
         """Ensures there is an active session loaded."""
@@ -82,6 +84,7 @@ class AppController:
         current_theme = self.settings_manager.get_setting("app.theme", "dark")
         memory_count = len(self.memory_manager.list_memories(include_archived=True))
         doc_count = len(self.knowledge_engine.list_indexed_documents())
+        task_count = len(self.workflow_engine.list_tasks(status="all"))
         user_name = self.profile_manager.get_profile_attribute("user_name", "User")
         
         return {
@@ -91,6 +94,7 @@ class AppController:
             "ollama_models": ollama_status["model_count"],
             "memory_count": memory_count,
             "doc_count": doc_count,
+            "task_count": task_count,
             "user_name": user_name,
             "version": get_version_string(),
             "theme": current_theme,

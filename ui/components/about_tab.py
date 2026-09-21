@@ -1,5 +1,5 @@
 """
-About Page Component for AetherMind Cortex UI (Phase 6 Expanded)
+About Page Component for AetherMind Cortex UI (Phase 7 Expanded)
 """
 
 import gradio as gr
@@ -23,12 +23,10 @@ def render_about_tab(controller: AppController):
             """)
             
         gr.Markdown("""
-        ### Phase 6 Cognitive Reasoning Engine Milestones
-        - ✅ Multi-Step Cognitive Reasoning Pipeline (Intent → Goal → Analysis → Alternatives → Trade-offs → Solution)
-        - ✅ Intent Detection Engine & Clarification Generator
-        - ✅ Alternative Solution Evaluator (Optimal, Faster, Simpler, Scalable)
-        - ✅ Trade-off Analysis & Risk Engine
-        - ✅ Confidence Engine & Uncertainty Score Calculator
-        - ✅ Developer Mode Reasoning Inspector Accordion in Chat Workspace
-        - ✅ 100% Offline Architecture - Zero external cloud dependency
+        ### Phase 7 Workflow Intelligence Milestones
+        - ✅ Workflow Analyzer (Tasks, repetitive activities, productivity trends)
+        - ✅ Task Intelligence Engine (Dependency tracking, priority scoring, estimated completion times)
+        - ✅ Smart Suggestions & Automation Generator
+        - ✅ Interactive Workflow Intelligence Dashboard UI
+        - ✅ 100% Offline Architecture - Zero cloud dependency & privacy-first design
         """)
