@@ -377,24 +377,30 @@ with st.sidebar:
     sessions = controller.session_manager.list_sessions()
     session_options = {s["id"]: f"{s['title']} ({s['created_at'][:10] if s.get('created_at') else 'Recent'})" for s in sessions}
     if session_options:
-        current_id = controller.current_session_id or list(session_options.keys())[0]
-        selected_sid = st.selectbox(
+        if "selected_session_id" not in st.session_state or st.session_state["selected_session_id"] not in session_options:
+            st.session_state["selected_session_id"] = controller.current_session_id or list(session_options.keys())[0]
+
+        def handle_session_change():
+            sel = st.session_state.get("selected_session_id")
+            if sel and sel != controller.current_session_id:
+                controller.switch_session(sel)
+
+        st.selectbox(
             "Select Conversation:",
             options=list(session_options.keys()),
-            format_func=lambda x: session_options[x],
-            index=list(session_options.keys()).index(current_id) if current_id in session_options else 0,
+            format_func=lambda x: session_options.get(x, x),
+            key="selected_session_id",
+            on_change=handle_session_change,
             label_visibility="collapsed"
         )
-        if selected_sid != controller.current_session_id:
-            controller.switch_session(selected_sid)
-            st.rerun()
 
     st.markdown("---")
     st.markdown("<span style='font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;'>Quick Actions</span>", unsafe_allow_html=True)
     q1, q2 = st.columns(2)
     with q1:
         if st.button("➕ New Chat", use_container_width=True):
-            controller.create_new_session()
+            new_id = controller.create_new_session()
+            st.session_state["selected_session_id"] = new_id
             st.rerun()
     with q2:
         if st.button("📂 Upload File", use_container_width=True):
