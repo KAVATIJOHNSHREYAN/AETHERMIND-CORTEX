@@ -349,7 +349,7 @@ with hcol3:
     </div>
     """, unsafe_allow_html=True)
 
-nav_options = ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"]
+nav_options = ["💬 Reasoning Workspace", "🛠️ Expert Skills", "🔌 Plugins & Workspaces", "📚 Knowledge Base", "⚡ Automation", "🌐 REST API & Integrations", "⚙️ Settings", "🩺 Diagnostics", "ℹ️ About"]
 
 if "pending_nav" in st.session_state:
     st.session_state["nav_page"] = st.session_state.pop("pending_nav")
@@ -756,6 +756,138 @@ elif page_selection == "⚡ Automation":
             """, unsafe_allow_html=True)
     else:
         st.caption("No pending workflow tasks.")
+
+elif page_selection == "🌐 REST API & Integrations":
+    st.markdown("""
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🌐 REST API Engine & OpenAPI Integration Hub</h2>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Programmatically access AetherMind Cortex reasoning, RAG vector context, expert skills, and manage API access keys.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # API Status & Metrics Cards
+    api_h1, api_h2, api_h3 = st.columns(3)
+    with api_h1:
+        st.markdown("""
+        <div class="module-card">
+            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">API Status</span>
+            <h3 style="margin:6px 0 0 0; color:#22c55e; font-size:1.3rem;">● Operational</h3>
+            <span style="font-size:0.8rem; color:#94a3b8;">Endpoint: <code>http://localhost:7860/api/v1</code></span>
+        </div>
+        """, unsafe_allow_html=True)
+    with api_h2:
+        st.markdown("""
+        <div class="module-card">
+            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">Authentication</span>
+            <h3 style="margin:6px 0 0 0; color:#38bdf8; font-size:1.3rem;">Bearer Token</h3>
+            <span style="font-size:0.8rem; color:#94a3b8;">Header: <code>Authorization: Bearer &lt;key&gt;</code></span>
+        </div>
+        """, unsafe_allow_html=True)
+    with api_h3:
+        st.markdown("""
+        <div class="module-card">
+            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">OpenAPI Spec</span>
+            <h3 style="margin:6px 0 0 0; color:#c084fc; font-size:1.3rem;">v3.0.0 Active</h3>
+            <span style="font-size:0.8rem; color:#94a3b8;">Swagger / JSON Schema Compliant</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>🔐 API Access Key Manager</h3>", unsafe_allow_html=True)
+    kcol1, kcol2 = st.columns(2)
+    with kcol1:
+        st.markdown("""
+        <div class="module-card">
+            <h4 style="margin:0 0 12px 0; color:#f8fafc;">Configured API Keys</h4>
+        """, unsafe_allow_html=True)
+        keys = controller.api_engine.get_api_keys()
+        if keys:
+            for k in keys:
+                st.markdown(f"🔑 **{k['name']}**: `{'*' * 12 + k['key'][-4:] if len(k['key']) > 4 else k['key']}` *(Updated {k['updated_at'][:10]})*")
+        else:
+            st.info("No external Cloud API keys configured yet. Local fallback mode active.")
+        
+        if st.button("➕ Generate Local Cortex API Token", use_container_width=True):
+            token = controller.api_engine.generate_cortex_token()
+            st.success(f"Generated new API Key: `{token}`")
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with kcol2:
+        st.markdown("""
+        <div class="module-card">
+            <h4 style="margin:0 0 12px 0; color:#f8fafc;">Configure Cloud Provider Keys</h4>
+        """, unsafe_allow_html=True)
+        provider_name = st.selectbox("API Provider", ["OpenAI", "Anthropic", "Groq", "OpenRouter", "Custom Endpoint"])
+        new_key = st.text_input("Enter Provider API Key", type="password")
+        if st.button("💾 Save Provider API Key", use_container_width=True):
+            if new_key:
+                controller.api_engine.set_api_key(provider_name, new_key)
+                st.toast(f"Saved API key for {provider_name} successfully!")
+                st.rerun()
+            else:
+                st.error("Please enter a valid API key string.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>🧪 Interactive REST API Playground</h3>", unsafe_allow_html=True)
+    tcol1, tcol2 = st.columns([1, 2])
+    with tcol1:
+        selected_ep = st.selectbox("Select Endpoint to Test", ["GET /api/v1/health", "GET /api/v1/models", "POST /api/v1/chat", "GET /api/v1/skills"])
+        test_prompt = ""
+        if "POST" in selected_ep:
+            test_prompt = st.text_area("Test Prompt Payload", value="Explain quantum computing briefly.")
+        
+        run_api = st.button("🚀 Execute REST API Request", use_container_width=True)
+        
+    with tcol2:
+        if run_api:
+            st.markdown("#### Response JSON Payload")
+            if selected_ep == "GET /api/v1/health":
+                res = controller.api_engine.handle_health()
+                st.json(res)
+            elif selected_ep == "GET /api/v1/models":
+                res = controller.api_engine.handle_list_models()
+                st.json(res)
+            elif selected_ep == "POST /api/v1/chat":
+                res = controller.api_engine.handle_chat_completion({"prompt": test_prompt or "Hello AetherMind API"})
+                st.json(res)
+            elif selected_ep == "GET /api/v1/skills":
+                res = controller.api_engine.handle_skills()
+                st.json(res)
+        else:
+            st.info("Select an endpoint and click 'Execute REST API Request' to inspect live API output.")
+
+    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>💻 Developer Integration Code Snippets</h3>", unsafe_allow_html=True)
+    code_lang = st.radio("Language:", ["Python", "cURL", "JavaScript"], horizontal=True)
+    if code_lang == "Python":
+        st.code("""import requests
+
+url = "http://localhost:7860/api/v1/chat"
+headers = {"Content-Type": "application/json"}
+payload = {
+    "prompt": "Analyze market trends for AI hardware.",
+    "model": "llama3-lexi-uncensored"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())
+""", language="python")
+    elif code_lang == "cURL":
+        st.code("""curl -X POST http://localhost:7860/api/v1/chat \\
+  -H "Content-Type: application/json" \\
+  -d '{"prompt": "Analyze market trends for AI hardware.", "model": "llama3-lexi-uncensored"}'
+""", language="bash")
+    else:
+        st.code("""fetch("http://localhost:7860/api/v1/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    prompt: "Analyze market trends for AI hardware.",
+    model: "llama3-lexi-uncensored"
+  })
+})
+.then(res => res.json())
+.then(data => console.log(data));
+""", language="javascript")
 
 elif page_selection == "⚙️ Settings":
     st.markdown("""

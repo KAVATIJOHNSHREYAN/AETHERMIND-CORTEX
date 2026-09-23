@@ -24,6 +24,7 @@ from core.plugin_manager import PluginManager
 from core.workspace_manager import WorkspaceManager
 from core.backup_manager import BackupManager
 from core.diagnostics import DiagnosticsEngine
+from core.api_engine import APIEngine
 
 logger = get_logger("AppController")
 
@@ -64,6 +65,7 @@ class AppController:
         self.workspace_manager = WorkspaceManager(self.db_conn)
         self.backup_manager = BackupManager()
         self.diagnostics_engine = DiagnosticsEngine(self.db_conn)
+        self.api_engine = APIEngine(controller=self, db_conn=self.db_conn)
         
         # Active session state
         self.current_session_id: Optional[str] = None
