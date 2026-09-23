@@ -799,10 +799,14 @@ elif page_selection == "🌐 REST API & Integrations":
         <div class="module-card">
             <h4 style="margin:0 0 12px 0; color:#f8fafc;">Configured API Keys</h4>
         """, unsafe_allow_html=True)
-        keys = controller.api_engine.get_api_keys()
+        try:
+            keys = controller.api_engine.get_api_keys()
+        except Exception:
+            keys = []
         if keys:
             for k in keys:
-                st.markdown(f"🔑 **{k['name']}**: `{'*' * 12 + k['key'][-4:] if len(k['key']) > 4 else k['key']}` *(Updated {k['updated_at'][:10]})*")
+                updated = str(k.get('updated_at', ''))[:10] or "Recent"
+                st.markdown(f"🔑 **{k['name']}**: `{'*' * 12 + str(k['key'])[-4:] if len(str(k['key'])) > 4 else k['key']}` *(Updated {updated})*")
         else:
             st.info("No external Cloud API keys configured yet. Local fallback mode active.")
         
