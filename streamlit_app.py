@@ -761,11 +761,11 @@ elif page_selection == "🌐 REST API & Integrations":
     st.markdown("""
     <div style="margin-bottom: 24px;">
         <h2 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🌐 REST API Engine & OpenAPI Integration Hub</h2>
-        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Programmatically access AetherMind Cortex reasoning, RAG vector context, expert skills, and manage API access keys.</p>
+        <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">100% API-Keyless & Open Access REST API. Access AetherMind Cortex reasoning, RAG context, and expert skills with zero rate limits and zero required keys.</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # API Status & Metrics Cards
+    # API Status & Metrics Cards (API-Keyless Unlimited)
     api_h1, api_h2, api_h3 = st.columns(3)
     with api_h1:
         st.markdown("""
@@ -778,26 +778,36 @@ elif page_selection == "🌐 REST API & Integrations":
     with api_h2:
         st.markdown("""
         <div class="module-card">
-            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">Authentication</span>
-            <h3 style="margin:6px 0 0 0; color:#38bdf8; font-size:1.3rem;">Bearer Token</h3>
-            <span style="font-size:0.8rem; color:#94a3b8;">Header: <code>Authorization: Bearer &lt;key&gt;</code></span>
+            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">Authentication Mode</span>
+            <h3 style="margin:6px 0 0 0; color:#38bdf8; font-size:1.3rem;">🔓 Keyless / Open Access</h3>
+            <span style="font-size:0.8rem; color:#94a3b8;">Headers: <code>No API Key Required</code></span>
         </div>
         """, unsafe_allow_html=True)
     with api_h3:
         st.markdown("""
         <div class="module-card">
-            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">OpenAPI Spec</span>
-            <h3 style="margin:6px 0 0 0; color:#c084fc; font-size:1.3rem;">v3.0.0 Active</h3>
-            <span style="font-size:0.8rem; color:#94a3b8;">Swagger / JSON Schema Compliant</span>
+            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">Execution Limits</span>
+            <h3 style="margin:6px 0 0 0; color:#c084fc; font-size:1.3rem;">♾️ Unlimited Free Usage</h3>
+            <span style="font-size:0.8rem; color:#94a3b8;">Zero Telemetry / 100% Offline</span>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>🔐 API Access Key Manager</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="cortex-card" style="margin: 20px 0; border: 1px solid rgba(34, 197, 94, 0.4); background: rgba(6, 10, 23, 0.7);">
+        <h4 style="margin:0 0 6px 0; color: #22c55e; font-size: 1.1rem; font-weight:700;">🟢 100% API-Keyless Architecture Active</h4>
+        <p style="margin:0; color: #cbd5e1; font-size: 0.9rem;">
+            AetherMind Cortex REST API is designed to be completely <b>API-keyless and friction-free</b>. You can query any endpoint (<code>/api/v1/chat</code>, <code>/api/v1/models</code>, <code>/api/v1/skills</code>, <code>/api/v1/health</code>) directly without any token, sign-up, or API key.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>⚙️ Optional Cloud Gateway (Optional Only)</h3>", unsafe_allow_html=True)
     kcol1, kcol2 = st.columns(2)
     with kcol1:
         st.markdown("""
         <div class="module-card">
-            <h4 style="margin:0 0 12px 0; color:#f8fafc;">Configured API Keys</h4>
+            <h4 style="margin:0 0 8px 0; color:#f8fafc;">Default Mode: Local Keyless Engine</h4>
+            <p style="margin:0 0 12px 0; color:#94a3b8; font-size:0.85rem;">All local calls use embedded Ollama & Cortex Reasoning Engine with zero keys required.</p>
         """, unsafe_allow_html=True)
         try:
             keys = controller.api_engine.get_api_keys()
@@ -808,31 +818,32 @@ elif page_selection == "🌐 REST API & Integrations":
                 updated = str(k.get('updated_at', ''))[:10] or "Recent"
                 st.markdown(f"🔑 **{k['name']}**: `{'*' * 12 + str(k['key'])[-4:] if len(str(k['key'])) > 4 else k['key']}` *(Updated {updated})*")
         else:
-            st.info("No external Cloud API keys configured yet. Local fallback mode active.")
+            st.success("🟢 Running in 100% API-Keyless Mode. No keys configured or required.")
         
-        if st.button("➕ Generate Local Cortex API Token", use_container_width=True):
+        if st.button("➕ Generate Optional Local Token", use_container_width=True):
             token = controller.api_engine.generate_cortex_token()
-            st.success(f"Generated new API Key: `{token}`")
+            st.success(f"Generated optional token: `{token}`")
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
     with kcol2:
         st.markdown("""
         <div class="module-card">
-            <h4 style="margin:0 0 12px 0; color:#f8fafc;">Configure Cloud Provider Keys</h4>
+            <h4 style="margin:0 0 8px 0; color:#f8fafc;">Optional Third-Party Cloud Key</h4>
+            <p style="margin:0 0 12px 0; color:#94a3b8; font-size:0.85rem;">Only set a key if you wish to route reasoning requests through paid external cloud providers (OpenAI, Anthropic, Groq).</p>
         """, unsafe_allow_html=True)
         provider_name = st.selectbox("API Provider", ["OpenAI", "Anthropic", "Groq", "OpenRouter", "Custom Endpoint"])
-        new_key = st.text_input("Enter Provider API Key", type="password")
-        if st.button("💾 Save Provider API Key", use_container_width=True):
+        new_key = st.text_input("Enter Optional API Key", type="password", help="Leave blank for 100% API-keyless local execution")
+        if st.button("💾 Save Optional Cloud Key", use_container_width=True):
             if new_key:
                 controller.api_engine.set_api_key(provider_name, new_key)
                 st.toast(f"Saved API key for {provider_name} successfully!")
                 st.rerun()
             else:
-                st.error("Please enter a valid API key string.")
+                st.error("Please enter a key string or leave unconfigured for API-keyless mode.")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>🧪 Interactive REST API Playground</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>🧪 Interactive Keyless REST API Playground</h3>", unsafe_allow_html=True)
     tcol1, tcol2 = st.columns([1, 2])
     with tcol1:
         selected_ep = st.selectbox("Select Endpoint to Test", ["GET /api/v1/health", "GET /api/v1/models", "POST /api/v1/chat", "GET /api/v1/skills"])
@@ -840,7 +851,7 @@ elif page_selection == "🌐 REST API & Integrations":
         if "POST" in selected_ep:
             test_prompt = st.text_area("Test Prompt Payload", value="Explain quantum computing briefly.")
         
-        run_api = st.button("🚀 Execute REST API Request", use_container_width=True)
+        run_api = st.button("🚀 Execute REST API Request (No Key Needed)", use_container_width=True)
         
     with tcol2:
         if run_api:
@@ -858,13 +869,14 @@ elif page_selection == "🌐 REST API & Integrations":
                 res = controller.api_engine.handle_skills()
                 st.json(res)
         else:
-            st.info("Select an endpoint and click 'Execute REST API Request' to inspect live API output.")
+            st.info("Select an endpoint and click 'Execute REST API Request (No Key Needed)' to inspect live API output.")
 
-    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>💻 Developer Integration Code Snippets</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin:24px 0 12px 0; font-size:1.2rem; color:#f8fafc;'>💻 Keyless Developer Integration Code Snippets</h3>", unsafe_allow_html=True)
     code_lang = st.radio("Language:", ["Python", "cURL", "JavaScript"], horizontal=True)
     if code_lang == "Python":
         st.code("""import requests
 
+# 100% API-Keyless REST API Call - No API Key Required!
 url = "http://localhost:7860/api/v1/chat"
 headers = {"Content-Type": "application/json"}
 payload = {
@@ -876,12 +888,14 @@ response = requests.post(url, json=payload, headers=headers)
 print(response.json())
 """, language="python")
     elif code_lang == "cURL":
-        st.code("""curl -X POST http://localhost:7860/api/v1/chat \\
+        st.code("""# 100% API-Keyless Call (Zero Rate Limits, No Key Needed)
+curl -X POST http://localhost:7860/api/v1/chat \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "Analyze market trends for AI hardware.", "model": "llama3-lexi-uncensored"}'
 """, language="bash")
     else:
-        st.code("""fetch("http://localhost:7860/api/v1/chat", {
+        st.code("""// 100% API-Keyless Call (Zero Rate Limits, No Key Needed)
+fetch("http://localhost:7860/api/v1/chat", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
